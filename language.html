@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use Inter as the default font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Fade-in animation for the card */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Toggle Switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #34D399; /* emerald-400 */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #34D399; /* emerald-400 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-sm bg-slate-50 dark:bg-slate-800 rounded-lg shadow-lg fade-in overflow-hidden">
+        <!-- Header Section -->
+        <div class="bg-green-600 text-white p-3 flex items-center justify-center relative">
+            <button onclick="window.location.href='index.html'" class="absolute left-4 text-white" data-translate-key="back_button_aria" aria-label="Back to Dashboard">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 class="text-xl font-semibold" data-translate-key="header">Settings</h1>
+        </div>
+
+        <div class="p-4 space-y-4">
+            <!-- Notifications & Alerts Button -->
+            <div class="px-2">
+                <button class="w-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg shadow-sm flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <span data-translate-key="notifications_alerts">Notifications & Alerts</span>
+                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        
+            <!-- Language Selector -->
+            <div class="px-2">
+                 <h3 class="font-semibold text-gray-600 dark:text-gray-400 mb-2 text-sm" data-translate-key="select_language_label">Language</h3>
+                <select id="language-selector" class="w-full px-4 py-3 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="ml">മലയാളം (Malayalam)</option>
+                </select>
+            </div>
+
+            <!-- Settings Sections -->
+            <div class="space-y-4 px-2">
+                <!-- Weather Alerts -->
+                <div>
+                    <h3 class="font-semibold text-gray-600 dark:text-gray-400 mb-2 text-sm" data-translate-key="weather_alerts">Weather Alerts</h3>
+                    <div class="bg-white dark:bg-gray-700 rounded-lg p-3 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-6 h-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                            <span data-translate-key="frost_warning">Frost Warning</span>
+                        </div>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="frost-warning-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <label for="frost-warning-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Reminders -->
+                <div>
+                    <h3 class="font-semibold text-gray-600 dark:text-gray-400 mb-2 text-sm" data-translate-key="task_reminders">Task Reminders</h3>
+                    <div class="bg-white dark:bg-gray-700 rounded-lg p-3 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-6 h-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                            <span data-translate-key="planting_schedule">Planting Schedule</span>
+                        </div>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="planting-schedule-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <label for="planting-schedule-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Communication Channel -->
+                <div>
+                    <h3 class="font-semibold text-gray-600 dark:text-gray-400 mb-2 text-sm" data-translate-key="communication_channel">Communication Channel</h3>
+                    <div class="bg-white dark:bg-gray-700 rounded-lg p-3 space-y-3 shadow-sm">
+                        <div class="flex items-center justify-between">
+                           <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991 0l-3.182-3.182a4.5 4.5 0 00-6.364 0l-3.182 3.182" /></svg>
+                                <span data-translate-key="in_app_push">In-App Push</span>
+                            </div>
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="in-app-push-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                <label for="in-app-push-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+                                <span data-translate-key="sms_messages">SMS Messages</span>
+                            </div>
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="sms-messages-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                <label for="sms-messages-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25-2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                                <span data-translate-key="email">Email</span>
+                            </div>
+                             <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="email-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                <label for="email-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to the shared project JavaScript file -->
+    <script src="logic.js"></script>
+    <script>
+        // Additional initialization for language selector
+        document.addEventListener('DOMContentLoaded', () => {
+            const languageSelector = document.getElementById('language-selector');
+            if (languageSelector) {
+                // Set initial value from localStorage
+                const savedLang = localStorage.getItem('krishi-sathi-lang') || 'en';
+                languageSelector.value = savedLang;
+                
+                // Add change event listener
+                languageSelector.addEventListener('change', (e) => {
+                    const selectedLang = e.target.value;
+                    if (window.setLanguage) {
+                        window.setLanguage(selectedLang);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

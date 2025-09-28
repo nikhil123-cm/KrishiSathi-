@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer's Crop Calendar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-sans: 'Lato', sans-serif;
+            --bg-main: #f8fafc;
+            --bg-container: #ffffff;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --accent-green: #22c55e;
+            --accent-green-dark: #16a34a;
+            --border-color: #e2e8f0;
+        }
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .day-cell {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            background-color: var(--bg-container);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            min-width: 0; /* Prevents content from forcing grid cells to expand */
+        }
+        .day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .day-cell.selected {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px var(--accent-green);
+            background-color: #f0fdf4;
+        }
+        .day-cell.today .day-number {
+            background-color: var(--accent-green);
+            color: white;
+            border-radius: 50%;
+        }
+        .day-number {
+            font-weight: 700;
+            font-size: 0.875rem;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .reminder-dot {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            width: 6px; height: 6px;
+            background-color: #f97316;
+            border-radius: 50%;
+        }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: var(--bg-container);
+            padding: 24px; border-radius: 12px;
+            width: 90%; max-width: 450px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .activity-item-sm {
+            font-size: 0.75rem; padding: 2px 6px;
+            border-radius: 6px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-4">
+            <button id="back-to-dashboard-btn" class="flex items-center gap-2 text-sm font-bold text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span>Back to Dashboard</span>
+            </button>
+        </div>
+        <div class="block lg:flex lg:gap-8 lg:items-start">
+            <!-- Calendar View -->
+            <div class="w-full lg:w-2/3 mb-8 lg:mb-0 bg-container rounded-xl shadow-sm p-6 border border-border-color overflow-hidden">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="current-month-year" class="text-2xl font-bold text-text-dark"></h2>
+                    <div class="flex items-center gap-2">
+                         <button id="today-btn" class="text-sm font-bold text-accent-green-dark hover:bg-green-100 px-4 py-2 rounded-lg transition-colors">Today</button>
+                        <button id="prev-month" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <button id="next-month" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 gap-2 text-center text-sm font-bold text-text-light mb-2">
+                    <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                </div>
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Calendar days will be generated by JS -->
+                </div>
+            </div>
+
+            <!-- Daily Focus Panel -->
+            <div class="w-full lg:w-1/3 bg-container rounded-xl shadow-sm p-6 border border-border-color">
+                <!-- This div is now only sticky on large screens -->
+                <div id="details-panel" class="lg:sticky top-8">
+                    <h3 id="details-date" class="font-bold text-xl text-text-dark mb-4 pb-2 border-b border-border-color"></h3>
+                    <div id="details-content" class="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar">
+                        <!-- Details will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reminder Modal -->
+    <div id="reminder-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold mb-4">Add Reminder for <span id="modal-date"></span></h2>
+            <input type="text" id="reminder-input" class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-accent-green focus:border-transparent" placeholder="E.g., Check irrigation...">
+            <div class="flex justify-end gap-2 mt-4">
+                <button id="close-modal" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 font-semibold text-gray-700 transition-colors">Cancel</button>
+                <button id="save-reminder" class="px-4 py-2 rounded-lg bg-accent-green hover:bg-accent-green-dark font-semibold text-white transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+
+<script src="logic.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Back to dashboard button
+        document.getElementById('back-to-dashboard-btn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        const cropSchedule = [ { crop: "Jowar (Kharif)", schedule: { "June": 1, "July": 1, "August": 2, "September": 3, "October": 4 } }, { crop: "Bajra (Kharif)", schedule: { "June": 1, "July": 1, "August": 2, "September": 3, "October": 4 } }, { crop: "Paddy/Rice (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 4, "October": 4 } }, { crop: "Tur/Arhar (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 3, "October": 3, "November": 4, "December": 4 } }, { crop: "Cotton (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 3, "October": 4, "November": 4 } }, { crop: "Groundnut (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 4, "October": 4 } }, { crop: "Soybean (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 3, "October": 4 } }, { crop: "Wheat (Rabi)", schedule: { "October": 1, "November": 1, "December": 2, "January": 3, "February": 4, "March": 4 } }, { crop: "Gram/Chickpea (Rabi)", schedule: { "October": 1, "November": 2, "December": 3, "January": 4, "February": 4 } }, { crop: "Jowar (Rabi)", schedule: { "September": 1, "October": 1, "November": 2, "December": 3, "January": 4, "February": 4 } }, { crop: "Sugarcane", schedule: { "January": 1, "February": 2, "March": 2, "April": 3, "May": 3, "June": 3, "July": 3, "August": 3, "September": 3, "October": 3, "November": 4, "December": 4 } }, { crop: "Onion (Rabi)", schedule: { "October": 1, "November": 1, "December": 2, "January": 3, "February": 4, "March": 4 } }, { crop: "Tomato", schedule: { "June": 1, "July": 2, "August": 3, "September": 4, "October": 4, "November": 1, "December": 2, "January": 3, "February": 4 } }, { crop: "Grapes", schedule: { "April": 3, "May": 3, "September": 3, "October": 3, "January": 4, "February": 4, "March": 4 } }, { crop: "Mango", schedule: { "June": 3, "July": 3, "August": 3, "April": 4, "May": 4, "June": 4 } }, { crop: "Watermelon (Summer)", schedule: { "January": 1, "February": 2, "March": 3, "April": 4, "May": 4 } }, ];
+        
+        const STAGE_DETAILS = {
+            1: { name: 'Sowing', emoji: '🌱', color: 'bg-green-100 text-green-800' },
+            2: { name: 'Growing', emoji: '🌿', color: 'bg-yellow-100 text-yellow-800' },
+            3: { name: 'Maintenance', emoji: '💧', color: 'bg-blue-100 text-blue-800' },
+            4: { name: 'Harvesting', emoji: '🌾', color: 'bg-orange-100 text-orange-800' }
+        };
+
+        const calendarGrid = document.getElementById('calendar-grid');
+        const currentMonthYearEl = document.getElementById('current-month-year');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const todayBtn = document.getElementById('today-btn');
+        
+        const modal = document.getElementById('reminder-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const modalDateEl = document.getElementById('modal-date');
+        const saveReminderBtn = document.getElementById('save-reminder');
+        const reminderInput = document.getElementById('reminder-input');
+        
+        const detailsDateEl = document.getElementById('details-date');
+        const detailsContentEl = document.getElementById('details-content');
+
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let reminders = JSON.parse(localStorage.getItem('farmerReminders')) || {};
+        let currentModalDateKey = null;
+
+        function saveReminders() { localStorage.setItem('farmerReminders', JSON.stringify(reminders)); }
+        
+        function openModal() {
+            const dateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+            currentModalDateKey = dateKey;
+            modalDateEl.textContent = `${months[selectedDate.getMonth()]} ${selectedDate.getDate()}`;
+            reminderInput.value = '';
+            modal.classList.add('visible');
+            reminderInput.focus();
+        }
+
+        function closeModal() { modal.classList.remove('visible'); }
+
+        function addReminder() {
+            const text = reminderInput.value.trim();
+            if (text && currentModalDateKey) {
+                if (!reminders[currentModalDateKey]) reminders[currentModalDateKey] = [];
+                reminders[currentModalDateKey].push(text);
+                saveReminders();
+                renderCalendar();
+                updateDetailsPanel();
+                closeModal();
+            }
+        }
+
+        function deleteReminder(index) {
+            const dateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+            if (dateKey && reminders[dateKey]) {
+                reminders[dateKey].splice(index, 1);
+                if (reminders[dateKey].length === 0) delete reminders[dateKey];
+                saveReminders();
+                renderCalendar();
+                updateDetailsPanel();
+            }
+        }
+        
+        function getActivitiesForDate(date) {
+            const monthName = months[date.getMonth()];
+            return cropSchedule
+                .filter(crop => crop.schedule[monthName])
+                .map(crop => ({ crop: crop.crop, stage: crop.schedule[monthName] }));
+        }
+        
+        function updateDetailsPanel() {
+            const month = selectedDate.getMonth();
+            const day = selectedDate.getDate();
+            const year = selectedDate.getFullYear();
+            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            detailsDateEl.textContent = `${months[month]} ${day}, ${year}`;
+            detailsContentEl.innerHTML = ''; // Clear previous content
+
+            // Crop Activities
+            const activities = getActivitiesForDate(selectedDate);
+            let activitiesHTML = `<div><h4 class="font-bold mb-2">Crop Schedule</h4><div class="space-y-2">`;
+            if (activities.length > 0) {
+                activities.forEach(activity => {
+                    const details = STAGE_DETAILS[activity.stage];
+                    activitiesHTML += `
+                        <div class="flex items-center p-2 rounded-lg ${details.color}">
+                            <span class="text-lg mr-3">${details.emoji}</span>
+                            <div>
+                                <p class="font-bold text-sm">${activity.crop}</p>
+                                <p class="text-xs">${details.name}</p>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                activitiesHTML += `<p class="text-sm text-text-light">No scheduled crop activities.</p>`;
+            }
+            activitiesHTML += `</div></div>`;
+            detailsContentEl.innerHTML += activitiesHTML;
+
+            // Reminders
+            const dayReminders = reminders[dateKey] || [];
+            let remindersHTML = `<div><div class="flex justify-between items-center mb-2"><h4 class="font-bold">My Reminders</h4><button id="add-reminder-btn" class="text-sm font-bold text-accent-green-dark hover:text-accent-green">+ Add</button></div><div id="reminders-list" class="space-y-2">`;
+            if (dayReminders.length > 0) {
+                dayReminders.forEach((text, index) => {
+                    remindersHTML += `
+                        <div class="flex justify-between items-center bg-gray-100 p-2 rounded-lg text-sm">
+                            <span>${text}</span>
+                            <button data-index="${index}" class="delete-reminder text-red-400 hover:text-red-600 font-bold">&times;</button>
+                        </div>`;
+                });
+            } else {
+                remindersHTML += `<p class="text-sm text-text-light">No personal reminders set.</p>`;
+            }
+            remindersHTML += `</div></div>`;
+            detailsContentEl.innerHTML += remindersHTML;
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const today = new Date();
+
+            currentMonthYearEl.textContent = `${months[month]} ${year}`;
+            calendarGrid.innerHTML = '';
+            
+            const firstDayOfWeek = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayOfWeek; i++) calendarGrid.innerHTML += `<div class="bg-gray-50 rounded-lg"></div>`;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                const cellDate = new Date(year, month, day);
+                const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                dayCell.className = 'day-cell cursor-pointer p-2 min-h-[100px] flex flex-col';
+                
+                const isToday = year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
+                if(isToday) dayCell.classList.add('today');
+                
+                if (year === selectedDate.getFullYear() && month === selectedDate.getMonth() && day === selectedDate.getDate()) {
+                    dayCell.classList.add('selected');
+                }
+
+                let dayContent = `<div class="flex justify-between items-center"><div class="day-number">${day}</div></div><div class="mt-1 flex-grow space-y-1 text-sm overflow-hidden">`;
+                
+                const activities = getActivitiesForDate(cellDate);
+                activities.slice(0, 2).forEach(activity => {
+                    const details = STAGE_DETAILS[activity.stage];
+                    dayContent += `<div class="activity-item-sm ${details.color}">${details.emoji} ${activity.crop}</div>`;
+                });
+                if(activities.length > 2) {
+                    dayContent += `<div class="text-xs text-text-light font-semibold pl-1">+ ${activities.length - 2} more</div>`;
+                }
+
+                dayContent += '</div>';
+                if (reminders[dateKey] && reminders[dateKey].length > 0) {
+                    dayContent += `<div class="reminder-dot"></div>`;
+                }
+                dayCell.innerHTML = dayContent;
+                
+                dayCell.addEventListener('click', () => {
+                    selectedDate = cellDate;
+                    renderCalendar();
+                    updateDetailsPanel();
+                });
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
+        nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
+        todayBtn.addEventListener('click', () => { currentDate = new Date(); selectedDate = new Date(); renderCalendar(); updateDetailsPanel(); });
+
+        closeModalBtn.addEventListener('click', closeModal);
+        saveReminderBtn.addEventListener('click', addReminder);
+        reminderInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') addReminder(); });
+        
+        detailsContentEl.addEventListener('click', (e) => {
+            if (e.target.id === 'add-reminder-btn') openModal();
+            if (e.target.classList.contains('delete-reminder')) {
+                const index = parseInt(e.target.dataset.index, 10);
+                deleteReminder(index);
+            }
+        });
+
+        renderCalendar();
+        updateDetailsPanel();
+    });
+</script>
+
+</body>
+</html>

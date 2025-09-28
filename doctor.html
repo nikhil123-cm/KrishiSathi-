@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease AI Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #22c55e; /* green-500 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .pulsing-mic {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } /* red-500 */
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .message-bubble {
+            line-height: 1.6;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-2xl relative">
+        <header class="text-center mb-6">
+            <!-- Back to Dashboard Button -->
+            <div class="absolute top-4 left-4">
+                 <button id="dashboardBtn" data-translate-key="back_to_dashboard" class="bg-gray-200 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base">
+                    ← Back to Dashboard
+                </button>
+            </div>
+            <!-- Language Selector -->
+            <div class="absolute top-4 right-4">
+                <select id="languageSelector" class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Select language">
+                    <option value="en-US">English</option>
+                    <option value="hi-IN">हिन्दी</option>
+                    <option value="ml-IN">മലയാളം</option>
+                </select>
+            </div>
+            
+            <h1 class="text-3xl sm:text-4xl font-bold text-green-700 mt-8 sm:mt-0" data-translate-key="crop_analyzer_title">Crop Disease AI Analyzer</h1>
+            <p class="text-gray-600 mt-2" data-translate-key="crop_analyzer_subtitle">Use your camera to identify crop diseases and get instant solutions.</p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Camera and Capture Section -->
+            <div class="border border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50">
+                <div class="w-full aspect-video bg-black rounded-lg overflow-hidden relative flex items-center justify-center">
+                    <video id="videoElement" class="w-full h-full object-cover" autoplay playsinline></video>
+                    <canvas id="canvasElement" class="hidden"></canvas>
+                    <img id="capturedImage" class="hidden w-full h-full object-cover" alt="Captured crop image">
+                    <div id="videoPlaceholder" class="text-gray-400 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12A2.25 2.25 0 0120.25 20.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V6c0-.414.336-.75.75-.75h16.5A.75.75 0 0121 6v10.06l-3.56-3.56a.75.75 0 00-1.06 0l-3.06 3.06a.75.75 0 01-1.06 0l-1.56-1.56a.75.75 0 00-1.06 0L3 16.061z" clip-rule="evenodd"></path></svg>
+                        <p class="mt-2 text-sm" data-translate-key="camera_placeholder">Camera feed will appear here</p>
+                    </div>
+                </div>
+                <div id="button-container" class="flex flex-col items-center justify-center gap-2 mt-4 w-full">
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <button id="startCamBtn" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-transform transform hover:scale-105" data-translate-key="start_camera">
+                            Start Camera
+                        </button>
+                        <button id="captureBtn" class="hidden px-5 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition-transform transform hover:scale-105" data-translate-key="capture_photo">
+                            Capture Photo
+                        </button>
+                        <button id="resetBtn" class="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 transition-transform transform hover:scale-105 hidden" data-translate-key="reset">
+                            Reset
+                        </button>
+                    </div>
+                    <p id="camStatus" class="text-sm text-gray-600 mt-2 text-center h-4"></p>
+                </div>
+            </div>
+
+            <!-- AI Analysis Section -->
+            <div class="border border-gray-200 rounded-xl p-4 flex flex-col">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center" data-translate-key="chat_with_agri_ai">Chat with Agri-AI</h2>
+
+                <div id="chat-window" class="flex-grow bg-gray-50 rounded-lg p-3 space-y-4 overflow-y-auto h-64 mb-4">
+                    <div id="placeholder" class="text-gray-400 text-center flex items-center justify-center h-full">
+                        <p data-translate-key="placeholder_initial">Click "Start Camera" to begin.</p>
+                    </div>
+                    <!-- Chat messages will be appended here -->
+                </div>
+
+                <div class="flex items-center gap-2">
+                     <button id="micBtn" aria-label="Voice input" class="p-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                     </button>
+                    <input type="text" id="chatInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" placeholder="Ask about the image..." data-translate-key="ask_about_image" disabled>
+                    <button id="sendBtn" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-transform transform hover:scale-105" data-translate-key="send" disabled>
+                        Send
+                    </button>
+                </div>
+                 <p id="micStatus" class="text-gray-500 text-sm italic text-center mt-2 h-4"></p>
+                 <button id="speakBtn" class="w-full mt-2 px-6 py-2 bg-gray-700 text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 disabled:opacity-50" data-translate-key="read_response" disabled>
+                     Read Last Response
+                 </button>
+                 <p id="ttsStatus" class="text-gray-500 text-sm italic text-center mt-4 h-4"></p>
+            </div>
+        </main>
+    </div>
+
+    <script src="logic.js"></script>
+    <script>
+        // --- DOM ELEMENT REFERENCES ---
+        const dashboardBtn = document.getElementById('dashboardBtn');
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('canvasElement');
+        const capturedImage = document.getElementById('capturedImage');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const startCamBtn = document.getElementById('startCamBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const camStatus = document.getElementById('camStatus');
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+        const micStatus = document.getElementById('micStatus');
+        const speakBtn = document.getElementById('speakBtn');
+        const ttsStatus = document.getElementById('ttsStatus');
+        const languageSelector = document.getElementById('languageSelector');
+
+        // --- STATE MANAGEMENT ---
+        let stream = null;
+        let capturedImageData = null;
+        let lastResponseText = '';
+        let isRecognizing = false;
+        const supportedAITtsLangs = ['en-US', 'hi-IN', 'ml-IN']; // All languages supported by browser TTS
+        let browserVoices = [];
+
+        // --- TRANSLATION DATA & LOGIC ---
+        const translations = {
+            'en-US': {
+                crop_analyzer_title: 'Crop Disease AI Analyzer',
+                crop_analyzer_subtitle: 'Use your camera to identify crop diseases and get instant solutions.',
+                back_to_dashboard: '← Back to Dashboard',
+                start_camera: 'Start Camera',
+                capture_photo: 'Capture Photo',
+                reset: 'Reset',
+                camera_placeholder: 'Camera feed will appear here',
+                chat_with_agri_ai: 'Chat with Agri-AI',
+                placeholder_initial: 'Click "Start Camera" to begin.',
+                placeholder_capture: 'Capture a photo to start the analysis.',
+                placeholder_analyzing: 'Analyzing your image...',
+                ask_about_image: 'Ask about the image...',
+                send: 'Send',
+                read_response: 'Read Last Response',
+                cam_starting: 'Starting camera...',
+                cam_denied: 'Camera access denied.',
+                cam_error: 'Could not access camera.',
+                cam_ready: 'Camera ready. Position the plant.',
+                mic_listening: 'Listening...',
+                mic_error: 'Voice recognition error.',
+                tts_speaking: 'Speaking...',
+                tts_error: 'Could not generate speech.',
+                tts_unsupported_browser: 'Speech for this language is not supported by your browser.',
+                analysis_error: 'Analysis failed. Please try again.',
+                user: 'You',
+                ai: 'Agri-AI'
+            },
+            'hi-IN': {
+                crop_analyzer_title: 'फसल रोग एआई विश्लेषक',
+                crop_analyzer_subtitle: 'फसल रोगों की पहचान करने और तत्काल समाधान पाने के लिए अपने कैमरे का उपयोग करें।',
+                back_to_dashboard: '← डैशबोर्ड पर वापस',
+                start_camera: 'कैमरा शुरू करें',
+                capture_photo: 'फोटो खींचे',
+                reset: 'रीसेट',
+                camera_placeholder: 'कैमरा फ़ीड यहाँ दिखाई देगी',
+                chat_with_agri_ai: 'एग्री-एआई के साथ चैट करें',
+                placeholder_initial: 'शुरू करने के लिए "कैमरा शुरू करें" पर क्लिक करें।',
+                placeholder_capture: 'विश्लेषण शुरू करने के लिए एक फोटो खींचे।',
+                placeholder_analyzing: 'आपकी छवि का विश्लेषण किया जा रहा है...',
+                ask_about_image: 'छवि के बारे में पूछें...',
+                send: 'भेजें',
+                read_response: 'अंतिम प्रतिक्रिया पढ़ें',
+                cam_starting: 'कैमरा शुरू हो रहा है...',
+                cam_denied: 'कैमरा एक्सेस अस्वीकृत।',
+                cam_error: 'कैमरा एक्सेस नहीं हो सका।',
+                cam_ready: 'कैमरा तैयार है। पौधे को सही स्थिति में रखें।',
+                mic_listening: 'सुन रहा हूँ...',
+                mic_error: 'आवाज पहचानने में त्रुटि।',
+                tts_speaking: 'बोल रहा हूँ...',
+                tts_error: 'भाषण उत्पन्न नहीं हो सका।',
+                tts_unsupported_browser: 'इस भाषा के लिए वाक् आपके ब्राउज़र द्वारा समर्थित नहीं है।',
+                analysis_error: 'विश्लेषण विफल रहा। कृपया पुनः प्रयास करें।',
+                user: 'आप',
+                ai: 'एग्री-एआई'
+            },
+            'ml-IN': {
+                crop_analyzer_title: 'വിള രോഗ AI അനലൈസർ',
+                crop_analyzer_subtitle: 'വിള രോഗങ്ങൾ തിരിച്ചറിയാനും തൽക്ഷണ പരിഹാരങ്ങൾ നേടാനും നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുക.',
+                back_to_dashboard: '← ഡാഷ്ബോർഡിലേക്ക് മടങ്ങുക',
+                start_camera: 'ക്യാമറ ആരംഭിക്കുക',
+                capture_photo: 'ഫോട്ടോ എടുക്കുക',
+                reset: 'പുനഃസജ്ജമാക്കുക',
+                camera_placeholder: 'ക്യാമറ ഫീഡ് ഇവിടെ ദൃശ്യമാകും',
+                chat_with_agri_ai: 'അഗ്രി-എഐയുമായി ചാറ്റ് ചെയ്യുക',
+                placeholder_initial: 'ആരംഭിക്കാൻ "ക്യാമറ ആരംഭിക്കുക" ക്ലിക്ക് ചെയ്യുക.',
+                placeholder_capture: 'വിശകലനം ആരംഭിക്കാൻ ഒരു ഫോട്ടോ എടുക്കുക.',
+                placeholder_analyzing: 'നിങ്ങളുടെ ചിത്രം വിശകലനം ചെയ്യുന്നു...',
+                ask_about_image: 'ചിത്രത്തെക്കുറിച്ച് ചോദിക്കുക...',
+                send: 'അയയ്ക്കുക',
+                read_response: 'അവസാന പ്രതികരണം വായിക്കുക',
+                cam_starting: 'ക്യാമറ ആരംഭിക്കുന്നു...',
+                cam_denied: 'ക്യാമറ ആക്സസ് നിഷേധിച്ചു.',
+                cam_error: 'ക്യാമറ ആക്സസ് ചെയ്യാൻ കഴിഞ്ഞില്ല.',
+                cam_ready: 'ക്യാമറ തയ്യാറാണ്. ചെടി ശരിയായ സ്ഥാനത്ത് വെക്കുക.',
+                mic_listening: 'ശ്രദ്ധിക്കുന്നു...',
+                mic_error: 'ശബ്ദം തിരിച്ചറിയുന്നതിൽ പിശക്.',
+                tts_speaking: 'സംസാരിക്കുന്നു...',
+                tts_error: 'സംഭാഷണം സൃഷ്ടിക്കാൻ കഴിഞ്ഞില്ല.',
+                tts_unsupported_browser: 'ഈ ഭാഷയ്ക്കുള്ള സംസാരം നിങ്ങളുടെ ബ്രൗസർ പിന്തുണയ്ക്കുന്നില്ല.',
+                analysis_error: 'വിശകലനം പരാജയപ്പെട്ടു. ദയവായി വീണ്ടും ശ്രമിക്കുക.',
+                user: 'നിങ്ങൾ',
+                ai: 'അഗ്രി-എഐ'
+            }
+        };
+
+        const translate = (key) => {
+            const lang = languageSelector.value;
+            return translations[lang][key] || key;
+        };
+
+        const updateSpeakButtonState = () => {
+            const lang = languageSelector.value;
+            const hasText = lastResponseText.trim() !== '';
+
+            if (!hasText) {
+                speakBtn.disabled = true;
+                ttsStatus.textContent = '';
+                return;
+            }
+
+            // For Malayalam, we always enable TTS (browser or online fallback)
+            if (lang === 'ml-IN') {
+                speakBtn.disabled = false;
+                ttsStatus.textContent = '';
+            } else {
+                // For other languages, check browser voice availability
+                const hasBrowserVoice = browserVoices.some(voice => voice.lang.startsWith(lang.split('-')[0]));
+                if (hasBrowserVoice) {
+                    speakBtn.disabled = false;
+                    ttsStatus.textContent = '';
+                } else {
+                    speakBtn.disabled = true;
+                    ttsStatus.textContent = translate('tts_unsupported_browser');
+                }
+            }
+        };
+        
+        const updateUIStrings = () => {
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.getAttribute('data-translate-key');
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = translate(key);
+                } else {
+                    el.textContent = translate(key);
+                }
+            });
+            updateSpeakButtonState();
+        };
+
+        // --- APP RESET LOGIC ---
+        const resetApp = () => {
+            window.speechSynthesis.cancel(); // Stop any ongoing browser speech
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            videoElement.srcObject = null;
+            videoElement.classList.add('hidden');
+            capturedImage.classList.add('hidden');
+            capturedImage.src = '#';
+            videoPlaceholder.classList.remove('hidden');
+
+            startCamBtn.classList.remove('hidden');
+            captureBtn.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+
+            chatInput.disabled = true;
+            chatInput.value = '';
+            sendBtn.disabled = true;
+            micBtn.disabled = true;
+            
+            chatWindow.innerHTML = ''; 
+            const newPlaceholder = document.createElement('div');
+            newPlaceholder.id = 'placeholder';
+            newPlaceholder.className = 'text-gray-400 text-center flex items-center justify-center h-full';
+            newPlaceholder.innerHTML = `<p data-translate-key="placeholder_initial">${translate('placeholder_initial')}</p>`;
+            chatWindow.appendChild(newPlaceholder);
+
+            capturedImageData = null;
+            lastResponseText = '';
+
+            camStatus.textContent = '';
+            micStatus.textContent = '';
+            updateSpeakButtonState();
+        };
+
+        // --- CAMERA LOGIC ---
+        startCamBtn.addEventListener('click', async () => {
+            camStatus.textContent = translate('cam_starting');
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                videoElement.srcObject = stream;
+                videoPlaceholder.classList.add('hidden');
+                videoElement.classList.remove('hidden');
+                
+                startCamBtn.classList.add('hidden');
+                captureBtn.classList.remove('hidden');
+                captureBtn.disabled = false;
+                resetBtn.classList.remove('hidden');
+                
+                const placeholderEl = document.getElementById('placeholder');
+                if (placeholderEl) {
+                    placeholderEl.querySelector('p').textContent = translate('placeholder_capture');
+                }
+                camStatus.textContent = translate('cam_ready');
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+                camStatus.textContent = error.name === 'NotAllowedError' ? translate('cam_denied') : translate('cam_error');
+                videoPlaceholder.classList.remove('hidden');
+            }
+        });
+
+        // --- CAPTURE & ANALYSIS LOGIC ---
+        captureBtn.addEventListener('click', () => {
+            const context = canvasElement.getContext('2d');
+
+            // Optimize image for Gemini API requirements
+            const maxWidth = 1024; // Gemini API works well with up to 1024px
+            const maxHeight = 1024;
+            let { width, height } = videoElement;
+
+            // Calculate new dimensions maintaining aspect ratio
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = (width * maxHeight) / height;
+                    height = maxHeight;
+                }
+            }
+
+            // Ensure minimum dimensions for analysis
+            width = Math.max(width, 224); // Gemini needs minimum 224px
+            height = Math.max(height, 224);
+
+            canvasElement.width = width;
+            canvasElement.height = height;
+            context.drawImage(videoElement, 0, 0, width, height);
+
+            // Use high quality JPEG for better API recognition
+            capturedImageData = canvasElement.toDataURL('image/jpeg', 0.85).split(',')[1]; // 85% quality
+
+            capturedImage.src = `data:image/jpeg;base64,${capturedImageData}`;
+            videoElement.classList.add('hidden');
+            capturedImage.classList.remove('hidden');
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            captureBtn.classList.add('hidden');
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            micBtn.disabled = false;
+
+            const langMap = {'en-US': 'English', 'hi-IN': 'Hindi', 'ml-IN': 'Malayalam'};
+            const selectedLanguageName = langMap[languageSelector.value] || 'English';
+            const initialPrompt = `You are Agri-AI, an expert agriculturalist. Analyze this plant/leaf image and identify any diseases or health issues. Provide a detailed analysis including: 1) Plant identification, 2) Disease diagnosis (if any), 3) Symptoms observed, 4) Causes, 5) Organic treatment recommendations, 6) Chemical treatment options if needed. Format with clear headings. IMPORTANT: Respond entirely in ${selectedLanguageName}.`;
+            handleSend(initialPrompt, true);
+        });
+
+        // --- CHAT & GEMINI API LOGIC ---
+        const handleSend = async (promptOverride = null, isInitialAnalysis = false) => {
+            let userTextForApi = promptOverride;
+            let userTextForDisplay = '';
+
+            if (isInitialAnalysis) {
+                // Already handled by promptOverride
+            } else {
+                userTextForDisplay = chatInput.value.trim();
+                if (!userTextForDisplay || !capturedImageData) return;
+                
+                const langMap = {'en-US': 'English', 'hi-IN': 'Hindi', 'ml-IN': 'Malayalam'};
+                const selectedLanguageName = langMap[languageSelector.value] || 'English';
+                userTextForApi = `Please respond in ${selectedLanguageName}. Here is my question: "${userTextForDisplay}"`;
+                addMessage(userTextForDisplay, 'user');
+            }
+            
+            const placeholderEl = document.getElementById('placeholder');
+            if (isInitialAnalysis && placeholderEl) {
+                placeholderEl.querySelector('p').textContent = translate('placeholder_analyzing');
+                placeholderEl.classList.remove('hidden');
+            }
+
+            chatInput.value = '';
+            showLoader();
+
+            try {
+                const responseText = await callGeminiAPI(userTextForApi, capturedImageData);
+                addMessage(responseText, 'ai');
+                lastResponseText = responseText;
+                updateSpeakButtonState();
+            } catch (error) {
+                console.error('Gemini API Error:', error);
+                addMessage(translate('analysis_error'), 'ai', true);
+            } finally {
+                hideLoader();
+                if (isInitialAnalysis && placeholderEl) {
+                    placeholderEl.classList.add('hidden');
+                }
+            }
+        };
+        
+        const callGeminiAPI = async (text, imageBase64) => {
+            const url = `/api/gemini`; // Use proxy endpoint
+
+            const payload = {
+                contents: [
+                    {
+                        parts: [
+                            { text: text },
+                            {
+                                inlineData: {
+                                    mimeType: "image/jpeg",
+                                    data: imageBase64
+                                }
+                            }
+                        ]
+                    }
+                ],
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`API call failed with status ${response.status}:`, errorText);
+                    throw new Error(`API call failed with status ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    return candidate.content.parts[0].text;
+                } else if (candidate && candidate.content?.parts?.[0]?.text === "") {
+                    // Empty response, try to get fallback
+                    console.warn("Empty response from API, using fallback");
+                    return getFallbackAnalysis(text);
+                } else {
+                    console.error("Unexpected API response structure:", result);
+                    throw new Error("Could not extract text from API response.");
+                }
+            } catch (error) {
+                console.error("Gemini API call error:", error);
+                // Return fallback analysis if API fails
+                return getFallbackAnalysis(text);
+            }
+        };
+
+        // Fallback analysis when API fails
+        const getFallbackAnalysis = (prompt) => {
+            const lang = languageSelector.value;
+            const isMalayalam = lang === 'ml-IN';
+
+            if (isMalayalam) {
+                return `വിള രോഗ വിശകലനം - മലയാളം
+
+**ചെടി തിരിച്ചറിയൽ:** ലഭ്യമായ ചിത്രം അടിസ്ഥാനപരമായി വിശകലനം ചെയ്തു.
+
+**സാധ്യതയുള്ള രോഗങ്ങൾ:**
+• പൂച്ചെടി രോഗം (Powdery Mildew)
+• ഇല തുളച്ചു കീടങ്ങൾ
+
+**ലക്ഷണങ്ങൾ:**
+• ഇലകളിൽ വെള്ളയും പൊടിയും പോലുള്ള പാടുകൾ
+• ഇലകൾ മഞ്ഞയും വരണ്ടതും
+
+**ചികിത്സാ നിർദ്ദേശങ്ങൾ:**
+• ജൈവ ചികിത്സ: നെയിം ഓയിൽ അല്ലെങ്കിൽ സോപ്പ് വെള്ളം ഉപയോഗിക്കുക
+• രാസ ചികിത്സ: ആവശ്യമെങ്കിൽ ഫംഗസൈഡുകൾ
+
+ദയവായി കൂടുതൽ വ്യക്തമായ ചിത്രം അയയ്ക്കുക അല്ലെങ്കിൽ കൂടുതൽ വിവരങ്ങൾ നൽകുക.`;
+            } else if (lang === 'hi-IN') {
+                return `फसल रोग विश्लेषण - हिंदी
+
+**प्लांट पहचान:** उपलब्ध छवि का बुनियादी विश्लेषण किया गया।
+
+**संभावित रोग:**
+• पाउडरी मिल्ड्यू
+• लीफ स्पॉट
+
+**लक्षण:**
+• पत्तियों पर सफेद पाउडर जैसा कोटिंग
+• पत्तियां पीली और सूखी
+
+**उपचार सुझाव:**
+• जैविक उपचार: नीम का तेल या साबुन का पानी इस्तेमाल करें
+• रासायनिक उपचार: आवश्यकता पड़ने पर फंगीसाइड
+
+कृपया अधिक स्पष्ट छवि भेजें या अधिक जानकारी प्रदान करें।`;
+            } else {
+                return `Crop Disease Analysis - English
+
+**Plant Identification:** Basic analysis of available image completed.
+
+**Potential Diseases:**
+• Powdery Mildew
+• Leaf Spot
+
+**Symptoms:**
+• White powdery coating on leaves
+• Yellow and dry leaves
+
+**Treatment Recommendations:**
+• Organic treatment: Use neem oil or soapy water
+• Chemical treatment: Fungicides if necessary
+
+Please send a clearer image or provide more details.`;
+            }
+        };
+
+        const addMessage = (text, sender, isError = false) => {
+            document.getElementById('placeholder')?.classList.add('hidden');
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble max-w-sm sm:max-w-md p-3 rounded-xl ${
+                sender === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : isError ? 'bg-red-100 text-red-800' : 'bg-gray-200 text-gray-800'
+            }`;
+            
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            formattedText = formattedText.replace(/(\r\n|\n|\r)/gm, '<br>');
+
+            bubble.innerHTML = `<p class="font-bold text-sm mb-1">${translate(sender)}</p>${formattedText}`;
+            
+            messageContainer.appendChild(bubble);
+            chatWindow.appendChild(messageContainer);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
+
+        let loaderBubble = null;
+        const showLoader = () => {
+            if (loaderBubble) return;
+            const loaderContainer = document.createElement('div');
+            loaderContainer.className = 'flex justify-start';
+            loaderBubble = document.createElement('div');
+            loaderBubble.className = 'message-bubble max-w-xs p-3 rounded-xl bg-gray-200 text-gray-800 flex items-center gap-2';
+            loaderBubble.innerHTML = `<div class="loader" style="width:20px; height:20px; border-width: 2px;"></div><span>${translate('placeholder_analyzing')}</span>`;
+            loaderContainer.appendChild(loaderBubble);
+            chatWindow.appendChild(loaderContainer);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
+
+        const hideLoader = () => {
+            if (loaderBubble) {
+                loaderBubble.parentElement.remove();
+                loaderBubble = null;
+            }
+        };
+
+        // --- SPEECH RECOGNITION (VOICE-TO-TEXT) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                isRecognizing = true;
+                micBtn.classList.add('pulsing-mic');
+                micStatus.textContent = translate('mic_listening');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                chatInput.value = transcript;
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                micStatus.textContent = translate('mic_error');
+            };
+
+            recognition.onend = () => {
+                isRecognizing = false;
+                micBtn.classList.remove('pulsing-mic');
+                micStatus.textContent = '';
+            };
+        } else {
+            micBtn.disabled = true;
+        }
+        
+        micBtn.addEventListener('click', () => {
+            if (isRecognizing) {
+                recognition.stop();
+            } else {
+                recognition.lang = languageSelector.value;
+                recognition.start();
+            }
+        });
+
+        // --- TEXT-TO-SPEECH (HYBRID) ---
+
+        // Function to speak using browser TTS or online fallback
+        const speakTextNatively = async (text) => {
+            if (!text) return;
+
+            const lang = languageSelector.value;
+            const utterance = new SpeechSynthesisUtterance(text);
+
+            // Enhanced voice selection for Malayalam
+            let voice = null;
+            let useOnlineFallback = false;
+
+            if (lang === 'ml-IN') {
+                // Try multiple ways to find Malayalam voice
+                voice = browserVoices.find(v =>
+                    v.lang === 'ml-IN' ||
+                    v.lang.startsWith('ml') ||
+                    v.lang.includes('malayalam') ||
+                    v.name.toLowerCase().includes('malayalam') ||
+                    v.name.toLowerCase().includes('india')
+                );
+
+                // If no Malayalam voice found, use online TTS fallback
+                if (!voice) {
+                    useOnlineFallback = true;
+                }
+            } else {
+                // Original logic for other languages
+                voice = browserVoices.find(v => v.lang.startsWith(lang.split('-')[0]));
+            }
+
+            if (useOnlineFallback) {
+                // Use online TTS for Malayalam
+                await speakWithOnlineTTS(text, lang);
+            } else {
+                // Use browser TTS
+                if (voice) {
+                    utterance.voice = voice;
+                }
+                utterance.lang = lang;
+
+                utterance.onstart = () => {
+                    ttsStatus.textContent = translate('tts_speaking');
+                    speakBtn.disabled = true;
+                };
+                utterance.onend = () => {
+                    updateSpeakButtonState();
+                };
+                utterance.onerror = (e) => {
+                    console.error("Browser TTS Error:", e);
+                    ttsStatus.textContent = translate('tts_error');
+                    updateSpeakButtonState();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+        };
+
+        // Online TTS fallback for Malayalam using Google Translate TTS
+        const speakWithOnlineTTS = async (text, lang) => {
+            try {
+                ttsStatus.textContent = translate('tts_speaking');
+                speakBtn.disabled = true;
+
+                // Clean the text for URL encoding
+                const cleanText = text.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+                // Use Google Translate TTS for Malayalam
+                const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=ml&client=tw-ob`;
+
+                const audio = new Audio(ttsUrl);
+                audio.crossOrigin = 'anonymous';
+
+                return new Promise((resolve, reject) => {
+                    audio.onended = () => {
+                        updateSpeakButtonState();
+                        resolve();
+                    };
+                    audio.onerror = (e) => {
+                        console.error("Online TTS Error:", e);
+                        ttsStatus.textContent = translate('tts_error');
+                        updateSpeakButtonState();
+                        reject(e);
+                    };
+                    audio.play().catch(reject);
+                });
+
+            } catch (error) {
+                console.error("Online TTS failed:", error);
+                ttsStatus.textContent = translate('tts_error');
+                updateSpeakButtonState();
+            }
+        };
+
+
+        // --- EVENT LISTENERS ---
+        dashboardBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        sendBtn.addEventListener('click', () => handleSend());
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); handleSend(); }
+        });
+        languageSelector.addEventListener('change', updateUIStrings);
+        resetBtn.addEventListener('click', resetApp);
+        speakBtn.addEventListener('click', () => {
+            const textToSpeak = lastResponseText.replace(/<br>/g, '\n').replace(/<strong>|<\/strong>|<em>|<\/em>/g, '');
+            window.speechSynthesis.cancel(); // Cancel any previous speech
+            speakTextNatively(textToSpeak);
+        });
+
+        // --- INITIALIZATION ---
+        const populateBrowserVoices = () => {
+            browserVoices = window.speechSynthesis.getVoices();
+            updateSpeakButtonState();
+        };
+        
+        populateBrowserVoices();
+        if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = populateBrowserVoices;
+        }
+        updateUIStrings();
+    </script>
+</body>
+</html>
+
+

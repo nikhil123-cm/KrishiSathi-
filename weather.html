@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom animation for elements fading in and sliding up */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-in-out forwards;
+            opacity: 0;
+        }
+        /* Applying delays for a staggered effect */
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-600 { animation-delay: 0.6s; }
+        .delay-700 { animation-delay: 0.7s; }
+        .delay-800 { animation-delay: 0.8s; }
+        .delay-900 { animation-delay: 0.9s; }
+        .delay-1000 { animation-delay: 1.0s; }
+
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(25px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        /* Enhanced glassmorphism effect */
+        .glass-card {
+            background: rgba(30, 30, 45, 0.4); /* Darker, purplish tint */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        /* Background styles */
+        .bg-farm-image {
+            background-image: url('https://images.unsplash.com/photo-1499529112087-3cb3b73cec95?q=80&w=3474&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="bg-farm-image text-white">
+    <div class="bg-black/60 min-h-screen flex flex-col items-center justify-center p-4">
+
+        <main class="w-full max-w-lg mx-auto">
+            <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-2xl relative">
+                <div class="absolute top-4 left-4 z-10">
+                    <button onclick="window.location.href='index.html'" class="bg-white/20 hover:bg-white/30 text-white py-2 px-3 rounded-lg backdrop-blur-sm transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back
+                    </button>
+                </div>
+                <div class="text-center mb-8 animate-fade-in-up">
+                    <h1 class="text-3xl sm:text-4xl font-bold">Weather Dashboard</h1>
+                    <p class="text-lg text-gray-300 mt-1">Your local forecast, instantly.</p>
+                </div>
+                
+                <div class="flex items-center gap-2 mb-6 animate-fade-in-up delay-100">
+                    <div class="relative w-full">
+                        <svg class="w-5 h-5 text-gray-400 absolute top-1/2 left-4 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="city-input" placeholder="Enter city name..." class="w-full bg-white/5 border-2 border-transparent focus:border-cyan-400 text-white placeholder-gray-400 rounded-full py-3 pl-12 pr-4 transition duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                    <button id="search-button" aria-label="Search weather" class="bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold p-3.5 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+
+                <div id="loader" class="text-center py-10 hidden">
+                    <svg class="animate-spin h-8 w-8 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-2 text-gray-300">Fetching weather data...</p>
+                </div>
+
+                <div id="error-message" class="text-center p-4 bg-red-500/30 rounded-xl hidden animate-fade-in-up">
+                    <p id="error-text"></p>
+                </div>
+                
+                <div id="weather-info" class="text-center hidden">
+                    <div id="weather-icon" class="mx-auto mb-2 text-cyan-300 animate-fade-in-up delay-200"></div>
+                    <h2 id="temperature" class="text-7xl lg:text-8xl font-extrabold tracking-tighter animate-fade-in-up delay-300"></h2>
+                    <p id="description" class="text-xl capitalize text-gray-300 mb-2 animate-fade-in-up delay-400"></p>
+                    <p id="city-name" class="text-2xl font-medium animate-fade-in-up delay-500"></p>
+                    <!-- *** NEW: Added element for the current date *** -->
+                    <p id="current-date" class="text-lg text-gray-400 animate-fade-in-up delay-600"></p>
+                    
+                    <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div class="bg-black/20 rounded-xl p-4 animate-fade-in-up delay-700">
+                            <div class="flex items-center justify-center gap-2">
+                               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>
+                                <p class="text-sm text-gray-400">Feels Like</p>
+                            </div>
+                            <p id="feels-like" class="text-xl font-semibold mt-1"></p>
+                        </div>
+                        <div class="bg-black/20 rounded-xl p-4 animate-fade-in-up delay-800">
+                           <div class="flex items-center justify-center gap-2">
+                               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M5 12a7 7 0 1 1 14 0c0 3.3-2.5 7-7 7s-7-3.7-7-7Z"/><path d="M8 12h8"/></svg>
+                                <p class="text-sm text-gray-400">Humidity</p>
+                            </div>
+                            <p id="humidity" class="text-xl font-semibold mt-1"></p>
+                        </div>
+                        <div class="bg-black/20 rounded-xl p-4 animate-fade-in-up delay-900">
+                           <div class="flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
+                                   <p class="text-sm text-gray-400">Wind Speed</p>
+                            </div>
+                            <p id="wind-speed" class="text-xl font-semibold mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-black/25 rounded-2xl p-4 animate-fade-in-up delay-1000">
+                        <div class="flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/></svg>
+                            <p class="text-sm font-semibold tracking-wider text-gray-300">RAIN ANALYSIS (NEXT 24H)</p>
+                        </div>
+                        <div id="rain-risk-indicator" class="flex items-center justify-center gap-3 mt-2">
+                            </div>
+                        <p id="rain-summary-text" class="text-center text-gray-400 mt-2 text-sm"></p>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-8 text-gray-400 text-sm opacity-70">
+            <p>Powered by OpenWeatherMap</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- API Configuration ---
+        const API_KEY = '83679e6e9b6655c07b8b70477a996437';
+
+        // --- DOM Element References ---
+        const cityInput = document.getElementById('city-input');
+        const searchButton = document.getElementById('search-button');
+        const loader = document.getElementById('loader');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const weatherInfo = document.getElementById('weather-info');
+        const weatherIcon = document.getElementById('weather-icon');
+        const temperature = document.getElementById('temperature');
+        const description = document.getElementById('description');
+        const cityName = document.getElementById('city-name');
+        const currentDateEl = document.getElementById('current-date'); // New element ref
+        const feelsLike = document.getElementById('feels-like');
+        const humidity = document.getElementById('humidity');
+        const windSpeed = document.getElementById('wind-speed');
+        const rainRiskIndicator = document.getElementById('rain-risk-indicator');
+        const rainSummaryText = document.getElementById('rain-summary-text');
+
+        // --- Weather Icon Mapping to SVG ---
+        const ICONS = {
+            sun: `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+            moon: `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+            'cloud-sun': `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12a4.5 4.5 0 0 1 4.5 4.5"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/><path d="M17.5 22a5 5 0 0 0-4.4-8.8"/><path d="M20 15.5c-2-1-3.8-.5-5 .5"/></svg>`,
+            'cloud-moon': `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M17.5 22a5 5 0 0 0-4.4-8.8"/><path d="M20 15.5c-2-1-3.8-.5-5 .5"/></svg>`,
+            cloud: `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>`,
+            cloudy: `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M22 10a3 3 0 0 0-3-3h-2.207a5.502 5.502 0 0 0-10.586 0H4a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-3.5"/></svg>`,
+            'cloud-rain': `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v1"/><path d="M8 14v1"/><path d="M16 19v1"/><path d="M16 14v1"/><path d="M12 21v1"/><path d="M12 16v1"/></svg>`,
+            'cloud-drizzle': `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v1"/><path d="M12 21v1"/><path d="M16 19v1"/></svg>`,
+            'cloud-lightning': `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.326A7 7 0 1 1 17.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></svg>`,
+            'cloud-snow': `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/></svg>`,
+            wind: `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+            'cloud-cog': `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><circle cx="12" cy="17" r="3"/><path d="M12 13v1"/><path d="M12 20v1"/><path d="m14.6 14.6 1 1"/><path d="m7.4 19.6 1 1"/><path d="M10 17h-1"/><path d="M15 17h-1"/><path d="m14.6 19.6-1-1"/><path d="m7.4 14.6-1 1"/></svg>`
+        };
+        const iconMap = {
+            '01d': 'sun', '01n': 'moon', '02d': 'cloud-sun', '02n': 'cloud-moon', '03d': 'cloud', '03n': 'cloud', '04d': 'cloudy', '04n': 'cloudy', '09d': 'cloud-rain', '09n': 'cloud-rain', '10d': 'cloud-drizzle', '10n': 'cloud-drizzle', '11d': 'cloud-lightning', '11n': 'cloud-lightning', '13d': 'cloud-snow', '13n': 'cloud-snow', '50d': 'wind', '50n': 'wind'
+        };
+        
+        async function fetchWeather(city) {
+            if (API_KEY === '' || API_KEY === 'YOUR_API_KEY_HERE') {
+                showError("API key is missing. Please add your OpenWeatherMap API key to the script.");
+                return;
+            }
+            weatherInfo.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            loader.classList.remove('hidden');
+
+            try {
+                const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${API_KEY}`;
+                const response = await fetch(apiUrl);
+                
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `City not found: ${city}`);
+                }
+
+                updateUI(data);
+            } catch (error) {
+                console.error("Failed to fetch forecast data:", error);
+                showError(error.message);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function updateUI(data) {
+            // --- Current Weather Display (using the first forecast item) ---
+            const currentForecast = data.list[0];
+            const iconName = iconMap[currentForecast.weather[0].icon] || 'cloud-cog';
+            weatherIcon.innerHTML = ICONS[iconName];
+            temperature.textContent = `${Math.round(currentForecast.main.temp)}°C`;
+            description.textContent = currentForecast.weather[0].description;
+            cityName.textContent = `${data.city.name}, ${data.city.country}`;
+            feelsLike.textContent = `${Math.round(currentForecast.main.feels_like)}°C`;
+            humidity.textContent = `${currentForecast.main.humidity}%`;
+            windSpeed.textContent = `${(currentForecast.wind.speed * 3.6).toFixed(1)} km/h`;
+
+            // *** NEW: Format and display the current date ***
+            const now = new Date();
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            currentDateEl.textContent = now.toLocaleDateString('en-US', options);
+
+
+            // --- Accurate Rain Analysis (for the next 24 hours) ---
+            const next24Hours = data.list.slice(0, 8); // 8 intervals of 3 hours = 24 hours
+            let maxRainProbability = 0;
+            let firstRainTime = null;
+
+            for (const forecast of next24Hours) {
+                if (forecast.pop > maxRainProbability) {
+                    maxRainProbability = forecast.pop;
+                }
+                if(forecast.pop > 0 && firstRainTime === null) {
+                    const date = new Date(forecast.dt * 1000);
+                    firstRainTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+            }
+
+            let riskLevel, riskColor, riskIcon, summaryText;
+
+            if (maxRainProbability > 0.4) {
+                riskLevel = 'High';
+                riskColor = 'text-red-400';
+                riskIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>`;
+                summaryText = `Up to a ${(maxRainProbability * 100).toFixed(0)}% chance of rain. First signs of rain expected around ${firstRainTime || 'later today'}.`;
+            } else {
+                riskLevel = 'Low';
+                riskColor = 'text-green-400';
+                riskIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`;
+                summaryText = `Highest chance of rain is only ${(maxRainProbability * 100).toFixed(0)}%. Looking clear.`;
+            }
+            
+            rainRiskIndicator.innerHTML = `
+                ${riskIcon}
+                <p class="text-xl font-semibold ${riskColor}">${riskLevel} Risk of Rain</p>
+            `;
+            rainSummaryText.textContent = summaryText;
+
+            // Reset animation and show weather info
+            const animatedElements = weatherInfo.querySelectorAll('.animate-fade-in-up');
+            animatedElements.forEach(el => {
+                el.classList.remove('animate-fade-in-up');
+                void el.offsetWidth;
+                el.classList.add('animate-fade-in-up');
+            });
+            weatherInfo.classList.remove('hidden');
+        }
+
+        function showError(message) {
+            errorText.textContent = message.charAt(0).toUpperCase() + message.slice(1);
+            errorMessage.classList.remove('hidden');
+        }
+
+        function handleSearch() {
+            const city = cityInput.value.trim();
+            if (city) {
+                fetchWeather(city);
+            } else {
+                showError("Please enter a city name.");
+            }
+        }
+
+        searchButton.addEventListener('click', handleSearch);
+        cityInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchWeather('Pune'); // Default city for initial view
+        });
+    </script>
+</body>
+</html>

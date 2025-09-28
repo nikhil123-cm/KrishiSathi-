@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Farming Techniques</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc;
+        }
+        /* Apply specific fonts for selected languages for better readability */
+        body.lang-hi { font-family: 'Noto Sans Devanagari', sans-serif; }
+        body.lang-ml { font-family: 'Noto Sans Malayalam', sans-serif; }
+        
+        .card-hover-effect {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        #read-with-ai-btn .spinner { display: none; }
+        #read-with-ai-btn.loading .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        #read-with-ai-btn.loading .play-icon,
+        #read-with-ai-btn.loading .stop-icon { display: none; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom select styling */
+        .custom-select {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%234A5568" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.2em;
+            padding-right: 2.5rem;
+        }
+        /* Notification styling */
+        .notification {
+            position: fixed; top: 20px; right: 20px;
+            background-color: #10b981; color: white; padding: 10px 15px;
+            border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000; opacity: 0; transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .notification.show { opacity: 1; transform: translateY(0); }
+        .notification.error { background-color: #ef4444; }
+
+        /* Subtitle overlay */
+        .subtitle-overlay {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); background-color: rgba(0, 0, 0, 0.8);
+            color: white; padding: 10px 20px; border-radius: 5px;
+            font-size: 18px; text-align: center; max-width: 80%;
+            z-index: 1000; opacity: 0; transition: opacity 0.3s;
+        }
+        .subtitle-overlay.show { opacity: 1; }
+        
+        /* Modal dialog */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); display: flex;
+            justify-content: center; align-items: center; z-index: 2000;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal.show { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white; padding: 20px; border-radius: 8px;
+            max-width: 400px; text-align: center;
+        }
+
+        /* Highlight for currently reading card */
+        .reading-highlight {
+            box-shadow: 0 0 0 3px #4ade80, 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            transform: translateY(-4px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 lang-en">
+
+    <!-- Notification container -->
+    <div id="notification" class="notification"></div>
+    <!-- Subtitle overlay -->
+    <div id="subtitle-overlay" class="subtitle-overlay"></div>
+    <!-- Language Consent Modal -->
+    <div id="language-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message">
+        <div class="modal-content">
+            <h3 id="modal-title" class="text-lg font-bold">Confirm Language Change</h3>
+            <p id="modal-message" class="mt-2">Are you sure you want to switch to this language? This will stop any current reading.</p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <button id="confirm-language" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Yes</button>
+                <button id="cancel-language" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+        <!-- Main Controls -->
+        <div class="flex flex-wrap justify-between items-center mb-8 gap-4">
+             <!-- Back Button -->
+             <button id="back-to-dashboard-btn" class="flex items-center justify-center bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" data-translate-key="back_to_dashboard">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Back to Dashboard</span>
+            </button>
+            <!-- Language and Read Aloud -->
+            <div class="flex items-center space-x-4">
+                <select id="language-selector" class="custom-select bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors" aria-label="Select language">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="ml">മലയാളം</option>
+                </select>
+                <button id="test-tts-btn" class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 mr-4">
+                    Test TTS
+                </button>
+                <button id="read-with-ai-btn" class="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 disabled:opacity-50" >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 play-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 stop-icon hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="spinner w-5 h-5 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
+                    <span id="read-aloud-text" data-translate-key="read_with_ai">Read with AI</span>
+                </button>
+            </div>
+        </div>
+
+        <header id="page-header" class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-green-700 tracking-tight" data-translate-key="advanced_techniques">Advanced Farming Techniques</h1>
+            <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto" data-translate-key="latest_innovations">Discover the latest innovations shaping the future of agriculture in India and beyond. Adopt powerful techniques for higher yields and sustainable practices.</p>
+            <p class="mt-2 text-sm text-gray-500" data-translate-key="last_reviewed">Last reviewed: September 26, 2025</p>
+        </header>
+
+        <main>
+             <!-- Select/Deselect All Checkbox -->
+            <div class="flex justify-center items-center mb-8">
+                <input type="checkbox" id="select-all-checkbox" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                <label for="select-all-checkbox" id="select-all-label" class="ml-2 font-medium text-gray-700" data-translate-key="select_all">Select / Deselect All for Reading</label>
+            </div>
+            <div id="techniques-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Farming technique cards will be dynamically inserted here -->
+            </div>
+        </main>
+        
+        <footer class="text-center mt-16 text-gray-500">
+            <p data-translate-key="copyright">&copy; 2025 AgriFuture Portal. All Rights Reserved.</p>
+        </footer>
+
+    </div>
+
+    <script src="logic.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // --- Translation Data ---
+            const translations = {
+                'en': {
+                    'read_with_ai': 'Read with AI', 'stop_reading': 'Stop Reading', 'generating': 'Generating...',
+                    'advanced_techniques': 'Advanced Farming Techniques',
+                    'latest_innovations': 'Discover the latest innovations shaping the future of agriculture in India and beyond. Adopt powerful techniques for higher yields and sustainable practices.',
+                    'last_reviewed': 'Last reviewed: September 26, 2025',
+                    'copyright': '&copy; 2025 AgriFuture Portal. All Rights Reserved.',
+                    'learn_more': 'Learn More', 'read_this': 'Read this', 'key_benefits': 'Key Benefits:',
+                    'select_all': 'Select / Deselect All for Reading',
+                    'api_error': 'Failed to generate audio. Please try again.',
+                    'confirm_language_title': 'Confirm Language Change',
+                    'confirm_language_message': 'Are you sure you want to switch? This will stop any current reading.',
+                    'back_to_dashboard': 'Back to Dashboard',
+                },
+                'hi': {
+                    'read_with_ai': 'AI से पढ़ें', 'stop_reading': 'पढ़ना बंद करें', 'generating': 'बना रहा है...',
+                    'advanced_techniques': 'उन्नत खेती की तकनीकें',
+                    'latest_innovations': 'भारत और उसके बाहर कृषि के भविष्य को आकार देने वाले नवीनतम नवाचारों की खोज करें। उच्च पैदावार और स्थायी प्रथाओं के लिए शक्तिशाली तकनीकें अपनाएं।',
+                    'last_reviewed': 'अंतिम समीक्षा: २६ सितंबर २०२५',
+                    'copyright': '&copy; २०२५ एग्रीफ्यूचर पोर्टल। सर्वाधिकार सुरक्षित।',
+                    'learn_more': ' और जानें', 'read_this': 'इसे पढ़ें', 'key_benefits': 'मुख्य लाभ:',
+                    'select_all': 'पढ़ने के लिए सभी को चुनें / अचयनित करें',
+                    'api_error': 'ऑडियो बनाने में विफल। कृपया पुन: प्रयास करें।',
+                    'confirm_language_title': 'भाषा परिवर्तन की पुष्टि करें',
+                    'confirm_language_message': 'क्या आप वाकई स्विच करना चाहते हैं? यह वर्तमान पठन को रोक देगा।',
+                    'back_to_dashboard': 'डैशबोर्ड पर वापस',
+                },
+                'ml': {
+                    'read_with_ai': 'AI ഉപയോഗിച്ച് വായിക്കുക', 'stop_reading': 'വായന നിർത്തുക', 'generating': 'നിർമ്മിക്കുന്നു...',
+                    'advanced_techniques': 'നൂതന കാർഷിക വിദ്യകൾ',
+                    'latest_innovations': 'ഇന്ത്യയിലും പുറത്തും കൃഷിയുടെ ഭാവിയെ രൂപപ്പെടുത്തുന്ന ഏറ്റവും പുതിയ കണ്ടുപിടുത്തങ്ങൾ കണ്ടെത്തുക. ഉയർന്ന വിളവിനും സുസ്ഥിരമായ പ്രവർത്തനങ്ങൾക്കും ശക്തമായ സാങ്കേതിക വിദ്യകൾ സ്വീകരിക്കുക.',
+                    'last_reviewed': 'അവസാനമായി അവലോകനം ചെയ്തത്: സെപ്റ്റംബർ 26, 2025',
+                    'copyright': '&copy; 2025 അഗ്രിഫ്യൂച്ചർ പോർട്ടൽ. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.',
+                    'learn_more': 'കൂടുതലറിയുക', 'read_this': 'ഇത് വായിക്കുക', 'key_benefits': 'പ്രധാന നേട്ടങ്ങൾ:',
+                    'select_all': 'വായനയ്ക്കായി എല്ലാം തിരഞ്ഞെടുക്കുക / തിരഞ്ഞെടുപ്പ് മാറ്റുക',
+                    'api_error': 'ഓഡിയോ നിർമ്മിക്കുന്നതിൽ പരാജയപ്പെട്ടു. ദയവായി വീണ്ടും ശ്രമിക്കുക.',
+                    'confirm_language_title': 'ഭാഷ മാറ്റം സ്ഥിരീകരിക്കുക',
+                    'confirm_language_message': 'നിങ്ങൾക്ക് മാറണമെന്ന് ഉറപ്പാണോ? ഇത് നിലവിലെ വായന നിർത്തും.',
+                    'back_to_dashboard': 'ഡാഷ്‌ബോർഡിലേക്ക് മടങ്ങുക',
+                }
+            };
+
+            const techniquesData = {
+                'en': [
+                    { title: "Precision Agriculture", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`, description: "Utilizes GPS, sensors, and drones to observe, measure, and respond to variability in crops. It's about applying the right treatment in the right place at the right time.", benefits: ["Optimizes fertilizer and water use", "Increases crop yield and quality", "Reduces environmental impact"], link: "https://icar.org.in/en/node/22714" },
+                    { title: "Hydroponics & Aeroponics", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>`, description: "Soilless farming methods. Hydroponics uses nutrient-rich water solutions, while aeroponics mists plant roots with nutrients. Ideal for urban farming.", benefits: ["Up to 90% less water usage", "Year-round cultivation possible", "Higher yield in smaller spaces"], link: "https://nhb.gov.in/schemes.aspx" },
+                    { title: "Vertical Farming", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>`, description: "Growing crops in vertically stacked layers, often in controlled environments. This method maximizes crop output in a limited area.", benefits: ["Massive space savings", "Independent of weather conditions", "Reduced transportation costs"], link: "https://nhb.gov.in/" },
+                    { title: "AI & IoT Integration", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l1.414 1.414M16.95 16.95l1.414 1.414M5.636 18.364l1.414-1.414M16.95 7.05l1.414-1.414" /></svg>`, description: "Using smart sensors (IoT) and artificial intelligence (AI) to monitor soil moisture, crop health, and automate irrigation and pest control for data-driven decisions.", benefits: ["Real-time farm monitoring", "Predictive analytics for yields", "Automated and efficient operations"], link: "https://agriwelfare.gov.in/en/DigiAgriDiv" },
+                    { title: "CRISPR Gene Editing", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`, description: "A revolutionary technology that allows for precise edits to plant DNA, helping to develop crops that are more nutritious, resilient to drought, and resistant to pests.", benefits: ["Develop climate-resilient crops", "Enhance nutritional value", "Accelerated crop improvement"], link: "https://icargenomeediting.in/" },
+                    { title: "Conservation Tillage", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.737 16.525l-.218-.328a2.25 2.25 0 01.02-2.812l3.41-3.998a2.25 2.25 0 013.432 0l3.41 3.998a2.25 2.25 0 01.02 2.812l-.218.328a2.25 2.25 0 01-2.924 0l-2.074-2.425a.75.75 0 00-1.132 0L10.66 16.525a2.25 2.25 0 01-2.924 0z" /></svg>`, description: "A planting method that leaves the previous year's crop residue on fields before and after planting the next crop to reduce soil erosion and runoff.", benefits: ["Improves soil health and organic matter", "Conserves water", "Reduces labor and fuel costs"], link: "https://www.ceew.in/publications/sustainable-agriculture-india/conservation-agriculture" },
+                    { title: "Agroforestry Systems", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>`, description: "Intentionally integrating trees and shrubs into crop and animal farming systems. It diversifies production for increased social, economic, and environmental benefits.", benefits: ["Enhances biodiversity & soil fertility", "Provides alternative income streams", "Improves water retention"], link: "https://www.cifor-icraf.org/knowledge/publication/27167/" },
+                    { title: "Smart Drip Irrigation", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>`, description: "An efficient water and nutrient delivery system that allows water to drip slowly to the roots of plants, minimizing evaporation and runoff. Crucial for water-scarce regions.", benefits: ["Reduces water waste by up to 70%", "Minimizes soil erosion & nutrient runoff", "Leads to better crop health"], link: "https://www.myscheme.gov.in/schemes/pmksypdmc" },
+                    { title: "Integrated Pest Management (IPM)", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-lime-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`, description: "An eco-friendly strategy focused on long-term pest prevention using biological control, habitat manipulation, and resistant varieties. Pesticides are a last resort.", benefits: ["Reduces reliance on chemical pesticides", "Promotes a balanced ecosystem", "Lowers costs and improves safety"], link: "https://nriipm.res.in/overview.aspx" }
+                ],
+                'hi': [
+                    { title: "सटीक कृषि", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`, description: "फसलों में परिवर्तनशीलता का निरीक्षण, माप और प्रतिक्रिया करने के लिए जीपीएस, सेंसर और ड्रोन का उपयोग करता है। यह सही समय पर सही जगह पर सही उपचार लागू करने के बारे में है।", benefits: ["उर्वरक और पानी के उपयोग को अनुकूलित करता है", "फसल की उपज और गुणवत्ता बढ़ाता है", "पर्यावरणीय प्रभाव को कम करता है"], link: "https://icar.org.in/en/node/22714" },
+                    { title: "हाइड्रोपोनिक्स और एरोपोनिक्स", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>`, description: "बिना मिट्टी की खेती की विधियाँ। हाइड्रोपोनिक्स में पोषक तत्वों से भरपूर पानी के घोल का उपयोग होता है, जबकि एरोपोनिक्स में पौधों की जड़ों पर पोषक तत्वों का छिड़काव किया जाता है। शहरी खेती के लिए आदर्श।", benefits: ["90% तक कम पानी का उपयोग", "साल भर खेती संभव", "कम जगह में अधिक उपज"], link: "https://nhb.gov.in/schemes.aspx" },
+                    { title: "वर्टिकल फार्मिंग", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>`, description: "फसलों को लंबवत खड़ी परतों में उगाना, अक्सर नियंत्रित वातावरण में। यह विधि एक सीमित क्षेत्र में फसल उत्पादन को अधिकतम करती है।", benefits: ["भारी जगह की बचत", "मौसम की स्थिति से स्वतंत्र", "परिवहन लागत में कमी"], link: "https://nhb.gov.in/" },
+                    { title: "एआई और आईओटी एकीकरण", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l1.414 1.414M16.95 16.95l1.414 1.414M5.636 18.364l1.414-1.414M16.95 7.05l1.414-1.414" /></svg>`, description: "डेटा-चालित निर्णयों के लिए मिट्टी की नमी, फसल स्वास्थ्य की निगरानी करने और सिंचाई और कीट नियंत्रण को स्वचालित करने के लिए स्मार्ट सेंसर (आईओटी) और कृत्रिम बुद्धिमत्ता (एआई) का उपयोग करना।", benefits: ["वास्तविक समय में खेत की निगरानी", "पैदावार के लिए भविष्य कहनेवाला विश्लेषण", "स्वचालित और कुशल संचालन"], link: "https://agriwelfare.gov.in/en/DigiAgriDiv" },
+                    { title: "क्रिस्पर जीन एडिटिंग", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`, description: "एक क्रांतिकारी तकनीक जो पौधों के डीएनए में सटीक संपादन की अनुमति देती है, जिससे अधिक पौष्टिक, सूखे के प्रति लचीला और कीटों के प्रतिरोधी फसलें विकसित करने में मदद मिलती है।", benefits: ["जलवायु-लचीला फसलें विकसित करें", "पोषण मूल्य बढ़ाएँ", "त्वरित फसल सुधार"], link: "https://icargenomeediting.in/" },
+                    { title: "संरक्षण जुताई", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.737 16.525l-.218-.328a2.25 2.25 0 01.02-2.812l3.41-3.998a2.25 2.25 0 013.432 0l3.41 3.998a2.25 2.25 0 01.02 2.812l-.218.328a2.25 2.25 0 01-2.924 0l-2.074-2.425a.75.75 0 00-1.132 0L10.66 16.525a2.25 2.25 0 01-2.924 0z" /></svg>`, description: "एक रोपण विधि जो मिट्टी के कटाव और अपवाह को कम करने के लिए अगली फसल बोने से पहले और बाद में पिछले साल के फसल अवशेषों को खेतों पर छोड़ देती है।", benefits: ["मिट्टी के स्वास्थ्य और जैविक पदार्थ में सुधार", "पानी का संरक्षण करता है", "श्रम और ईंधन लागत को कम करता है"], link: "https://www.ceew.in/publications/sustainable-agriculture-india/conservation-agriculture" },
+                    { title: "कृषि वानिकी प्रणाली", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>`, description: "जानबूझकर पेड़ों और झाड़ियों को फसल और पशुपालन प्रणालियों में एकीकृत करना। यह बढ़े हुए सामाजिक, आर्थिक और पर्यावरणीय लाभों के लिए उत्पादन में विविधता लाता है।", benefits: ["जैव विविधता और मिट्टी की उर्वरता बढ़ाता है", "वैकल्पिक आय स्रोत प्रदान करता है", "जल प्रतिधारण में सुधार करता है"], link: "https://www.cifor-icraf.org/knowledge/publication/27167/" },
+                    { title: "स्मार्ट ड्रिप सिंचाई", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>`, description: "एक कुशल जल और पोषक तत्व वितरण प्रणाली जो पानी को पौधों की जड़ों तक धीरे-धीरे टपकने देती है, जिससे वाष्पीकरण और अपवाह कम होता है। पानी की कमी वाले क्षेत्रों के लिए महत्वपूर्ण।", benefits: ["70% तक पानी की बर्बादी कम करता है", "मिट्टी के कटाव और पोषक तत्वों के अपवाह को कम करता है", "बेहतर फसल स्वास्थ्य की ओर ले जाता है"], link: "https://www.myscheme.gov.in/schemes/pmksypdmc" },
+                    { title: "एकीकृत कीट प्रबंधन (आईपीएम)", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-lime-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`, description: "जैविक नियंत्रण, आवास हेरफेर और प्रतिरोधी किस्मों का उपयोग करके दीर्घकालिक कीट रोकथाम पर केंद्रित एक पर्यावरण-अनुकूल रणनीति। कीटनाशक अंतिम उपाय हैं।", benefits: ["रासायनिक कीटनाशकों पर निर्भरता कम करता है", "एक संतुलित पारिस्थितिकी तंत्र को बढ़ावा देता है", "लागत कम करता है और सुरक्षा में सुधार करता है"], link: "https://nriipm.res.in/overview.aspx" }
+                ],
+                'ml': [
+                    { title: "സൂക്ഷ്മ കൃഷി", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`, description: "വിളകളിലെ വ്യതിയാനങ്ങൾ നിരീക്ഷിക്കാനും അളക്കാനും പ്രതികരിക്കാനും ജിപിഎസ്, സെൻസറുകൾ, ഡ്രോണുകൾ എന്നിവ ഉപയോഗിക്കുന്നു. ശരിയായ സ്ഥലത്ത് ശരിയായ സമയത്ത് ശരിയായ പരിചരണം നൽകുക എന്നതാണ് പ്രധാനം.", benefits: ["വളത്തിന്റെയും വെള്ളത്തിന്റെയും ഉപയോഗം ഒപ്റ്റിമൈസ് ചെയ്യുന്നു", "വിളവ്, ഗുണമേന്മ വർദ്ധിപ്പിക്കുന്നു", "പാരിസ്ഥിതിക ആഘാതം കുറയ്ക്കുന്നു"], link: "https://icar.org.in/en/node/22714" },
+                    { title: "ഹൈഡ്രോപോണിക്സ് & എയറോപോണിക്സ്", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>`, description: "മണ്ണില്ലാ കൃഷി രീതികൾ. ഹൈഡ്രോപോണിക്സിൽ പോഷകസമൃദ്ധമായ ജല ലായനികൾ ഉപയോഗിക്കുന്നു, അതേസമയം എയറോപോണിക്സിൽ സസ്യങ്ങളുടെ വേരുകളിൽ പോഷകങ്ങൾ തളിക്കുന്നു. നഗര കൃഷിക്ക് അനുയോജ്യം.", benefits: ["90% വരെ കുറവ് ജല ഉപയോഗം", "വർഷം മുഴുവൻ കൃഷി സാധ്യമാണ്", "ചെറിയ സ്ഥലത്ത് ഉയർന്ന വിളവ്"], link: "https://nhb.gov.in/schemes.aspx" },
+                    { title: "വെർട്ടിക്കൽ ഫാമിംഗ്", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>`, description: "നിയന്ത്രിത സാഹചര്യങ്ങളിൽ, ലംബമായി അടുക്കിവെച്ച പാളികളിൽ വിളകൾ വളർത്തുന്നു. ഈ രീതി പരിമിതമായ സ്ഥലത്ത് നിന്ന് പരമാവധി വിളവ് നൽകുന്നു.", benefits: ["വലിയ തോതിലുള്ള സ്ഥലലാഭം", "കാലാവസ്ഥയെ ആശ്രയിക്കുന്നില്ല", "ഗതാഗത ചെലവ് കുറയ്ക്കുന്നു"], link: "https://nhb.gov.in/" },
+                    { title: "എഐ, ഐഒടി സംയോജനം", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l1.414 1.414M16.95 16.95l1.414 1.414M5.636 18.364l1.414-1.414M16.95 7.05l1.414-1.414" /></svg>`, description: "മണ്ണിലെ ഈർപ്പം, വിളകളുടെ ആരോഗ്യം എന്നിവ നിരീക്ഷിക്കുന്നതിനും, ജലസേചനവും കീടനിയന്ത്രണവും ഓട്ടോമേറ്റ് ചെയ്യുന്നതിനും സ്മാർട്ട് സെൻസറുകളും (ഐഒടി) നിർമ്മിത ബുദ്ധിയും (എഐ) ഉപയോഗിക്കുന്നു.", benefits: ["കൃഷിയിടത്തിന്റെ തത്സമയ നിരീക്ഷണം", "വിളവ് പ്രവചിക്കാനുള്ള അനലിറ്റിക്സ്", "യാന്ത്രികവും കാര്യക്ഷമവുമായ പ്രവർത്തനങ്ങൾ"], link: "https://agriwelfare.gov.in/en/DigiAgriDiv" },
+                    { title: "ക്രിസ്പർ ജീൻ എഡിറ്റിംഗ്", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`, description: "സസ്യങ്ങളുടെ ഡിഎൻഎയിൽ കൃത്യമായ മാറ്റങ്ങൾ വരുത്താൻ സഹായിക്കുന്ന ഒരു വിപ്ലവകരമായ സാങ്കേതികവിദ്യ. കൂടുതൽ പോഷകഗുണമുള്ളതും വരൾച്ചയെയും കീടങ്ങളെയും പ്രതിരോധിക്കുന്നതുമായ വിളകൾ വികസിപ്പിക്കാൻ ഇത് സഹായിക്കുന്നു.", benefits: ["കാലാവസ്ഥയെ അതിജീവിക്കുന്ന വിളകൾ വികസിപ്പിക്കുന്നു", "പോഷകമൂല്യം വർദ്ധിപ്പിക്കുന്നു", "വേഗത്തിലുള്ള വിള മെച്ചപ്പെടുത്തൽ"], link: "https://icargenomeediting.in/" },
+                    { title: "സംരക്ഷണ ഉഴവ്", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.737 16.525l-.218-.328a2.25 2.25 0 01.02-2.812l3.41-3.998a2.25 2.25 0 013.432 0l3.41 3.998a2.25 2.25 0 01.02 2.812l-.218.328a2.25 2.25 0 01-2.924 0l-2.074-2.425a.75.75 0 00-1.132 0L10.66 16.525a2.25 2.25 0 01-2.924 0z" /></svg>`, description: "മണ്ണൊലിപ്പും ജലനഷ്ടവും കുറയ്ക്കുന്നതിന്, അടുത്ത വിള നടുന്നതിന് മുമ്പും ശേഷവും മുൻവർഷത്തെ വിള അവശിഷ്ടങ്ങൾ വയലിൽ തന്നെ നിലനിർത്തുന്ന ഒരു കൃഷിരീതി.", benefits: ["മണ്ണിന്റെ ആരോഗ്യവും ജൈവാംശവും മെച്ചപ്പെടുത്തുന്നു", "ജലം സംരക്ഷിക്കുന്നു", "തൊഴിലാളികളുടെയും ഇന്ധനത്തിന്റെയും ചെലവ് കുറയ്ക്കുന്നു"], link: "https://www.ceew.in/publications/sustainable-agriculture-india/conservation-agriculture" },
+                    { title: "കൃഷി വനവൽക്കരണ സംവിധാനങ്ങൾ", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>`, description: "വിള, മൃഗപരിപാലന സംവിധാനങ്ങളിൽ മരങ്ങളും കുറ്റിച്ചെടികളും ബോധപൂർവ്വം സംയോജിപ്പിക്കുന്നു. ഇത് സാമൂഹികവും സാമ്പത്തികവും പാരിസ്ഥിതികവുമായ നേട്ടങ്ങൾക്കായി ഉൽപ്പാദനത്തെ വൈവിധ്യവൽക്കരിക്കുന്നു.", benefits: ["ജൈവവൈവിധ്യവും മണ്ണിന്റെ ഫലഭൂയിഷ്ഠതയും വർദ്ധിപ്പിക്കുന്നു", "ബദൽ വരുമാന മാർഗ്ഗങ്ങൾ നൽകുന്നു", "ജലം സംഭരിക്കാനുള്ള കഴിവ് മെച്ചപ്പെടുത്തുന്നു"], link: "https://www.cifor-icraf.org/knowledge/publication/27167/" },
+                    { title: "സ്മാർട്ട് ഡ്രിപ്പ് ഇറിഗേഷൻ", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>`, description: "ജലവും പോഷകങ്ങളും കാര്യക്ഷമമായി എത്തിക്കുന്ന ഒരു സംവിധാനം. ഇത് ബാഷ്പീകരണം കുറച്ച്, വെള്ളം തുള്ളികളായി ചെടികളുടെ വേരുകളിലേക്ക് സാവധാനം എത്തിക്കുന്നു. ജലക്ഷാമമുള്ള പ്രദേശങ്ങൾക്ക് അത്യന്താപേക്ഷിതം.", benefits: ["70% വരെ ജലനഷ്ടം കുറയ്ക്കുന്നു", "മണ്ണൊലിപ്പും പോഷകനഷ്ടവും കുറയ്ക്കുന്നു", "വിളകളുടെ മികച്ച ആരോഗ്യത്തിലേക്ക് നയിക്കുന്നു"], link: "https://www.myscheme.gov.in/schemes/pmksypdmc" },
+                    { title: "സംയോജിത കീട നിയന്ത്രണം (IPM)", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-lime-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`, description: "ജൈവ നിയന്ത്രണം, ആവാസവ്യവസ്ഥയിലെ മാറ്റങ്ങൾ, പ്രതിരോധശേഷിയുള്ള ഇനങ്ങൾ എന്നിവ ഉപയോഗിച്ച് ദീർഘകാല കീട പ്രതിരോധത്തിൽ ശ്രദ്ധ കേന്ദ്രീകരിക്കുന്ന ഒരു പരിസ്ഥിതി സൗഹൃദ തന്ത്രം. കീടനാശിനികൾ അവസാന ആശ്രയം മാത്രം.", benefits: ["രാസ കീടനാശിനികളെ ആശ്രയിക്കുന്നത് കുറയ്ക്കുന്നു", "സന്തുലിതമായ ആവാസവ്യവസ്ഥയെ പ്രോത്സാഹിപ്പിക്കുന്നു", "ചെലവ് കുറയ്ക്കുകയും സുരക്ഷ മെച്ചപ്പെടുത്തുകയും ചെയ്യുന്നു"], link: "https://nriipm.res.in/overview.aspx" }
+                ]
+            };
+
+            const grid = document.getElementById('techniques-grid');
+            const languageSelector = document.getElementById('language-selector');
+            const languageModal = document.getElementById('language-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const confirmLanguageBtn = document.getElementById('confirm-language');
+            const cancelLanguageBtn = document.getElementById('cancel-language');
+            const selectAllCheckbox = document.getElementById('select-all-checkbox');
+            const pageHeader = document.getElementById('page-header');
+        
+            const readButton = document.getElementById('read-with-ai-btn');
+            const buttonText = document.getElementById('read-aloud-text');
+            const playIcon = readButton.querySelector('.play-icon');
+            const stopIcon = readButton.querySelector('.stop-icon');
+
+            let isReading = false;
+            let textQueue = [];
+            let currentPlayIndex = 0;
+            let pendingLanguage = null;
+            let currentLanguage = 'en';
+            let previouslyHighlightedElement = null;
+            let browserVoices = [];
+            
+
+            const updateButtonState = () => {
+                const lang = languageSelector.value;
+                if (readButton.classList.contains('loading')) {
+                    buttonText.textContent = translations[lang].generating; return;
+                }
+                buttonText.textContent = isReading ? translations[lang].stop_reading : translations[lang].read_with_ai;
+                playIcon.classList.toggle('hidden', isReading);
+                stopIcon.classList.toggle('hidden', !isReading);
+            };
+
+            const showNotification = (message, isError = false) => {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.classList.toggle('error', isError);
+                notification.classList.add('show');
+                setTimeout(() => notification.classList.remove('show'), 5000);
+            };
+
+            const subtitleOverlay = document.getElementById('subtitle-overlay');
+            const showSubtitle = (text) => {
+                subtitleOverlay.textContent = text;
+                subtitleOverlay.classList.add('show');
+            };
+
+            const hideSubtitle = () => {
+                subtitleOverlay.classList.remove('show');
+            };
+
+            const renderTechniques = (lang) => {
+                grid.innerHTML = '';
+                const currentTechniques = techniquesData[lang] || techniquesData['en'];
+                const currentTranslations = translations[lang] || translations['en'];
+
+                currentTechniques.forEach((tech, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-xl shadow-md overflow-hidden card-hover-effect fade-in-card';
+                    card.style.animationDelay = `${index * 100}ms`;
+                    card.innerHTML = `
+                        <div class="p-8">
+                            <div class="flex items-center">
+                                ${tech.icon}
+                                <h3 class="ml-4 tracking-wide text-xl text-gray-800 font-bold">${tech.title}</h3>
+                            </div>
+                            <p class="mt-4 text-gray-600">${tech.description}</p>
+                            <div class="mt-6">
+                                <h4 class="font-semibold text-gray-700">${currentTranslations.key_benefits}</h4>
+                                <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1">
+                                    ${tech.benefits.map(benefit => `<li>${benefit}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="mt-6 flex items-center justify-between">
+                                <a href="${tech.link}" target="_blank" rel="noopener noreferrer" class="inline-block bg-green-100 text-green-800 font-semibold px-4 py-2 rounded-lg hover:bg-green-200 transition-colors duration-300">
+                                    ${currentTranslations.learn_more}
+                                </a>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="checkbox-${index}" class="technique-checkbox h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                    <label for="checkbox-${index}" class="ml-2 text-sm font-medium text-gray-700">${currentTranslations.read_this}</label>
+                                </div>
+                            </div>
+                        </div>`;
+                    grid.appendChild(card);
+                });
+            };
+
+            const applyTranslations = (lang) => {
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    if (translations[lang] && translations[lang][key]) {
+                        if (el.tagName === 'INPUT') {
+                            el.placeholder = translations[lang][key];
+                        } else {
+                            el.innerHTML = translations[lang][key];
+                        }
+                    }
+                });
+            };
+
+            const changeLanguage = (lang) => {
+                document.body.className = `bg-gray-50 text-gray-800 lang-${lang}`;
+                applyTranslations(lang);
+                renderTechniques(lang);
+                updateButtonState();
+                localStorage.setItem('krishi-sathi-lang', lang);
+                currentLanguage = lang;
+            };
+
+            // Back to dashboard button
+            document.getElementById('back-to-dashboard-btn').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            languageSelector.addEventListener('change', (e) => {
+                stopReading();
+                const selectedLang = e.target.value;
+                pendingLanguage = selectedLang;
+                modalTitle.textContent = translations[currentLanguage].confirm_language_title;
+                modalMessage.textContent = translations[currentLanguage].confirm_language_message;
+                languageModal.classList.add('show');
+            });
+            confirmLanguageBtn.addEventListener('click', () => {
+                if (pendingLanguage) {
+                    languageSelector.value = pendingLanguage;
+                    changeLanguage(pendingLanguage);
+                    pendingLanguage = null;
+                }
+                languageModal.classList.remove('show');
+            });
+            cancelLanguageBtn.addEventListener('click', () => {
+                languageSelector.value = currentLanguage;
+                pendingLanguage = null;
+                languageModal.classList.remove('show');
+            });
+            selectAllCheckbox.addEventListener('change', (e) => {
+                document.querySelectorAll('.technique-checkbox').forEach(c => c.checked = e.target.checked);
+            });
+            
+
+            const updateHighlight = (newElement) => {
+                if (previouslyHighlightedElement) {
+                    previouslyHighlightedElement.classList.remove('reading-highlight');
+                }
+                if (newElement) {
+                    newElement.classList.add('reading-highlight');
+                    newElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    previouslyHighlightedElement = newElement;
+                }
+            };
+            
+            // --- TEXT-TO-SPEECH (HYBRID) ---
+
+            // Function to speak using browser TTS or online fallback
+            const speakTextNatively = (text) => {
+                return new Promise(async (resolve, reject) => {
+                    if (!text) {
+                        resolve();
+                        return;
+                    }
+
+                    const lang = languageSelector.value;
+                    const utterance = new SpeechSynthesisUtterance(text);
+
+                    // Enhanced voice selection for all languages
+                    let voice = null;
+                    let useOnlineFallback = false;
+
+                    // Simplified voice selection - try to find any voice for the language
+                    voice = browserVoices.find(v =>
+                        v.lang.startsWith(lang) ||
+                        v.lang.includes(lang === 'hi' ? 'hi' : lang === 'ml' ? 'ml' : lang)
+                    );
+
+                    // If no specific voice found, use the first available voice
+                    if (!voice && browserVoices.length > 0) {
+                        voice = browserVoices[0]; // Use default voice
+                        console.log('Using default voice for', lang);
+                    }
+
+                    // For Malayalam, if no voice found, use online fallback
+                    if (!voice && lang === 'ml') {
+                        useOnlineFallback = true;
+                    }
+
+                    if (useOnlineFallback || ((lang === 'hi' || lang === 'ml') && !voice)) {
+                        // Use online TTS for Hindi/Malayalam when no browser voice is available
+                        try {
+                            await speakWithOnlineTTS(text, lang);
+                            resolve();
+                        } catch (error) {
+                            reject(error);
+                        }
+                    } else {
+                        // Use browser TTS for all languages
+                        if (voice) {
+                            utterance.voice = voice;
+                            console.log('Using voice:', voice.name, 'for language:', lang);
+                        } else {
+                            console.log('No specific voice found for', lang, ', using default');
+                        }
+
+                        // Set language for TTS
+                        utterance.lang = lang === 'en' ? 'en-US' : lang === 'hi' ? 'hi-IN' : 'ml-IN';
+                        utterance.rate = lang === 'hi' ? 0.8 : 0.9; // Slightly slower for Hindi
+                        utterance.pitch = 1.0;
+
+                        utterance.onstart = () => {
+                            console.log('TTS started for:', lang);
+                        };
+                        utterance.onend = () => {
+                            console.log('TTS ended for:', lang);
+                            resolve();
+                        };
+                        utterance.onerror = (e) => {
+                            console.error("Browser TTS Error:", e);
+                            // If browser TTS fails, try online fallback for Hindi and Malayalam
+                            if (lang === 'hi' || lang === 'ml') {
+                                console.log('Browser TTS failed for', lang, ', trying online fallback');
+                                speakWithOnlineTTS(text, lang).then(() => {
+                                    resolve();
+                                }).catch((error) => {
+                                    reject(error);
+                                });
+                            } else {
+                                reject(e);
+                            }
+                        };
+
+                        speechSynthesis.speak(utterance);
+                    }
+                });
+            };
+
+            // Online TTS fallback using Google Translate TTS
+            const speakWithOnlineTTS = (text, lang) => {
+                return new Promise((resolve, reject) => {
+                    try {
+                        console.log('Using online TTS for:', lang);
+                        // Clean the text for URL encoding
+                        const cleanText = text.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+                        // Use Google Translate TTS for the specified language
+                        const langCode = lang === 'hi' ? 'hi' : lang === 'ml' ? 'ml' : 'en';
+                        const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${langCode}&client=tw-ob`;
+
+                        console.log('TTS URL:', ttsUrl);
+
+                        const audio = new Audio(ttsUrl);
+                        audio.crossOrigin = 'anonymous';
+
+                        audio.onended = () => {
+                            console.log('Online TTS completed for:', lang);
+                            resolve();
+                        };
+                        audio.onerror = (e) => {
+                            console.error("Online TTS Error:", e);
+                            // If online TTS fails, try browser TTS as last resort
+                            console.log('Online TTS failed, trying browser TTS as fallback');
+                            const fallbackUtterance = new SpeechSynthesisUtterance(text);
+                            fallbackUtterance.lang = lang === 'en' ? 'en-US' : lang === 'hi' ? 'hi-IN' : 'ml-IN';
+                            fallbackUtterance.rate = 0.7; // Slower for better understanding
+                            fallbackUtterance.onend = () => resolve();
+                            fallbackUtterance.onerror = () => reject(e); // If this also fails, reject
+                            speechSynthesis.speak(fallbackUtterance);
+                        };
+                        audio.oncanplaythrough = () => {
+                            audio.play().catch((playError) => {
+                                console.error("Audio play failed:", playError);
+                                reject(playError);
+                            });
+                        };
+                        audio.load(); // Load the audio
+
+                    } catch (error) {
+                        console.error("Online TTS setup failed:", error);
+                        reject(error);
+                    }
+                });
+            };
+
+            async function playNextInQueue() {
+                if (!isReading || currentPlayIndex >= textQueue.length) {
+                    stopReading();
+                    return;
+                }
+
+                const chunk = textQueue[currentPlayIndex];
+                const lang = languageSelector.value;
+
+                updateHighlight(chunk.element);
+                showSubtitle(chunk.text);
+
+                const next = () => {
+                    if (isReading) {
+                        currentPlayIndex++;
+                        playNextInQueue();
+                    }
+                };
+
+                if (lang === 'en') {
+                    // Use browser TTS for English
+                    const utterance = new SpeechSynthesisUtterance(chunk.text);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.9;
+                    utterance.onend = next;
+                    utterance.onerror = (e) => {
+                        console.error('SpeechSynthesis Error:', e);
+                        next(); // Continue even if one chunk fails
+                    };
+                    speechSynthesis.speak(utterance);
+                } else {
+                    // Use hybrid TTS for Hindi and Malayalam
+                    try {
+                        await speakTextNatively(chunk.text);
+                        next();
+                    } catch (error) {
+                        console.error('TTS failed, continuing...', error);
+                        next();
+                    }
+                }
+            }
+
+            const buildTextQueue = () => {
+                const queue = [];
+                const lang = languageSelector.value;
+                const keyBenefitsText = translations[lang].key_benefits;
+                const checkedBoxes = document.querySelectorAll('.technique-checkbox:checked');
+                
+                const elementsToRead = [];
+                if (checkedBoxes.length > 0) {
+                    checkedBoxes.forEach(box => elementsToRead.push(box.closest('.fade-in-card')));
+                } else {
+                    elementsToRead.push(pageHeader);
+                    document.querySelectorAll('#techniques-grid > div').forEach(card => elementsToRead.push(card));
+                }
+
+                elementsToRead.forEach(element => {
+                    const isCard = element.id !== 'page-header';
+                    const title = element.querySelector('h1, h3')?.innerText;
+                    const desc = isCard ? element.querySelector('p')?.innerText : pageHeader.querySelector('p.text-lg')?.innerText;
+
+                    if (title) queue.push({ text: title, element: element });
+                    if (desc) queue.push({ text: desc, element: element });
+                    
+                    if(isCard) {
+                        const benefits = Array.from(element.querySelectorAll('ul li')).map(li => li.innerText).join(', ');
+                        if (benefits) queue.push({ text: `${keyBenefitsText} ${benefits}.`, element: element });
+                    }
+                });
+                return queue.filter(item => item.text);
+            };
+
+            const stopReading = () => {
+                const wasReading = isReading;
+                isReading = false;
+
+                speechSynthesis.cancel();
+
+                textQueue = [];
+                currentPlayIndex = 0;
+
+                if (wasReading) {
+                    readButton.classList.remove('loading');
+                    readButton.disabled = false;
+                    updateButtonState();
+                    hideSubtitle();
+                    updateHighlight(null);
+                }
+            };
+
+            const startReading = () => {
+                textQueue = buildTextQueue();
+                if (textQueue.length === 0) return;
+                
+                isReading = true;
+                currentPlayIndex = 0;
+                updateButtonState();
+                
+                playNextInQueue();
+            }
+            
+            // This promise-based function ensures voices are loaded before any speech is attempted.
+            const ensureVoicesLoaded = () => {
+                return new Promise((resolve) => {
+                    const voices = speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        browserVoices = voices;
+                        console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+                        resolve(voices);
+                        return;
+                    }
+                    speechSynthesis.onvoiceschanged = () => {
+                        browserVoices = speechSynthesis.getVoices();
+                        console.log('Voices loaded:', browserVoices.map(v => `${v.name} (${v.lang})`));
+                        resolve(browserVoices);
+                    };
+                });
+            };
+
+            // Test TTS button
+            document.getElementById('test-tts-btn').addEventListener('click', async () => {
+                const lang = languageSelector.value;
+                const testText = lang === 'hi' ? 'नमस्ते, यह एक परीक्षण है' :
+                                lang === 'ml' ? 'ഹലോ, ഇത് ഒരു പരീക്ഷണമാണ്' :
+                                'Hello, this is a test';
+
+                console.log('Testing TTS with:', testText, 'in language:', lang);
+                try {
+                    await speakTextNatively(testText);
+                    showNotification('TTS test successful!', false);
+                } catch (error) {
+                    console.error('TTS test failed:', error);
+                    showNotification('TTS test failed. Check console for details.', true);
+                }
+            });
+
+            readButton.addEventListener('click', async () => {
+                if (isReading) {
+                    stopReading();
+                } else {
+                    // This is the crucial fix: Wait for voices to be ready before starting.
+                    await ensureVoicesLoaded();
+                    startReading();
+                }
+            });
+            
+            // --- Initial Load ---
+            const savedLang = localStorage.getItem('krishi-sathi-lang') || 'en';
+            languageSelector.value = savedLang;
+            changeLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>
+

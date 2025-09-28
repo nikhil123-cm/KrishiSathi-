@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latest Agriculture News - Kerala</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use Inter font family */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for a better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Simple animation for cards on hover */
+        .news-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-8 md:mb-12">
+            <div class="flex items-center justify-center mb-4">
+                <button onclick="window.location.href='index.html'" class="mr-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors" data-translate-key="back_to_dashboard">
+                    ← Back to Dashboard
+                </button>
+            </div>
+            <h1 class="text-3xl md:text-5xl font-bold text-gray-900" data-translate-key="kerala_agriculture_news">Kerala Agriculture News</h1>
+            <p class="text-md md:text-lg text-gray-600 mt-2" data-translate-key="updates_farming">Updates on farming, spices, and crops from Kerala.</p>
+        </header>
+
+        <!-- Container for news articles -->
+        <main id="news-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Loading spinner -->
+            <div id="loader" class="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center items-center h-64">
+                 <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+             <!-- Error message container -->
+            <div id="error-message" class="hidden col-span-1 md:col-span-2 lg:col-span-3 text-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline" id="error-text"></span>
+            </div>
+        </main>
+    </div>
+
+    <script src="logic.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsContainer = document.getElementById('news-container');
+            const loader = document.getElementById('loader');
+            
+            // --- Mock Data ---
+            // The NewsAPI developer plan does not allow requests from client-side browsers on domains other than localhost.
+            // To make the application viewable, we are using static mock data that mimics the API's response structure.
+            const mockNewsData = {
+                "status": "ok",
+                "totalResults": 7,
+                "articles": [
+                    {
+                        "source": { "id": null, "name": "The Economic Times" },
+                        "author": "ET Bureau",
+                        "title": "Black Pepper Prices Surge in Kerala Amid High Demand",
+                        "description": "A surge in export demand has driven up black pepper prices across key markets in Kerala, bringing cheer to farmers in the high ranges who have been battling climate change.",
+                        "url": "https://economictimes.indiatimes.com/markets/commodities/news",
+                        "urlToImage": "https://placehold.co/600x400/f39c12/ffffff?text=Black+Pepper",
+                        "publishedAt": "2025-09-14T11:00:00Z",
+                    },
+                    {
+                        "source": { "id": null, "name": "The New Indian Express" },
+                        "author": "Express News Service",
+                        "title": "Organic Vegetable Farming Gets a Boost with New Subsidy Scheme",
+                        "description": "The state's agriculture department has rolled out a new subsidy scheme to encourage more farmers in Wayanad and Palakkad to adopt certified organic farming methods for vegetables.",
+                        "url": "https://www.newindianexpress.com/states/kerala",
+                        "urlToImage": "https://placehold.co/600x400/16a085/ffffff?text=Organic+Veggies",
+                        "publishedAt": "2025-09-14T09:30:00Z",
+                    },
+                    {
+                        "source": { "id": null, "name": "The Hindu BusinessLine" },
+                        "author": "Agri Reporter",
+                        "title": "Kerala Rubber Farmers Concerned as Prices Fluctuate",
+                        "description": "Fluctuating global prices for natural rubber are causing concern among small-scale farmers in Kottayam and surrounding regions, who are appealing for government intervention.",
+                        "url": "https://www.thehindubusinessline.com/markets/commodities/",
+                        "urlToImage": "https://placehold.co/600x400/27ae60/ffffff?text=Rubber+Tapping",
+                        "publishedAt": "2025-09-13T08:00:00Z",
+                    },
+                    {
+                        "source": { "id": null, "name": "Mathrubhumi News" },
+                        "author": "Correspondent",
+                        "title": "Heavy Rains Impact Cardamom Harvest in Idukki",
+                        "description": "Unusually heavy rainfall in the Idukki district has delayed the cardamom harvesting season, with farmers worried about potential impacts on crop quality and yield.",
+                        "url": "https://english.mathrubhumi.com/news/kerala",
+                        "urlToImage": "https://placehold.co/600x400/2980b9/ffffff?text=Cardamom+Fields",
+                        "publishedAt": "2025-09-13T07:15:00Z",
+                    },
+                    {
+                        "source": { "id": null, "name": "Manorama Online" },
+                        "author": "Staff Reporter",
+                        "title": "New Initiative to Combat Coconut Mite Infestation in Coastal Kerala",
+                        "description": "The Kerala Agricultural University has launched a new bio-control initiative to help farmers in coastal areas like Alappuzha combat the recent surge in coconut mite infestations.",
+                        "url": "https://www.onmanorama.com/news/kerala.html",
+                        "urlToImage": "https://placehold.co/600x400/8e44ad/ffffff?text=Coconut+Grove",
+                        "publishedAt": "2025-09-12T21:00:00Z",
+                    },
+                     {
+                        "source": { "id": null, "name": "Kerala Kaumudi" },
+                        "author": "Special Correspondent",
+                        "title": "State Government Announces Support for Paddy Cultivation in Kuttanad",
+                        "description": "In a move to boost rice production, the state government has announced a new financial support package for paddy farmers in the Kuttanad region, the rice bowl of Kerala.",
+                        "url": "https://keralakaumudi.com/en",
+                        "urlToImage": "https://placehold.co/600x400/d35400/ffffff?text=Paddy+Fields",
+                        "publishedAt": "2025-09-12T19:30:00Z",
+                    },
+                    {
+                        "source": { "id": null, "name": "Deshabhimani" },
+                        "author": "Staff Reporter",
+                        "title": "Delayed Monsoon Withdrawal Affects Banana Plantations in Thrissur",
+                        "description": "Farmers in the Thrissur district report concerns over the delayed withdrawal of the monsoon, which is leading to waterlogging and affecting the health of banana crops.",
+                        "url": "https://www.deshabhimani.com/english",
+                        "urlToImage": "https://placehold.co/600x400/c0392b/ffffff?text=Banana+Plantation",
+                        "publishedAt": "2025-09-11T15:00:00Z",
+                    }
+                ]
+            };
+
+            // --- Function to display news articles in the DOM ---
+            function displayNews(articles) {
+                // Clear any existing content (like the loader)
+                newsContainer.innerHTML = '';
+
+                if (!articles || articles.length === 0) {
+                     const errorText = document.getElementById('error-text');
+                     const errorMessageContainer = document.getElementById('error-message');
+                     errorText.textContent = ' No articles found.';
+                     errorMessageContainer.classList.remove('hidden');
+                     return;
+                }
+
+                articles.forEach(article => {
+                    // Skip articles with no title or description
+                    if (!article.title || !article.description) {
+                        return;
+                    }
+                    
+                    const newsCard = document.createElement('div');
+                    newsCard.className = 'news-card bg-white rounded-lg shadow-md overflow-hidden flex flex-col';
+                    
+                    // Use a placeholder image if the article image is missing
+                    const imageUrl = article.urlToImage ? article.urlToImage : 'https://placehold.co/600x400/e2e8f0/4a5568?text=News';
+
+                    // Format date for better readability
+                    const publishedDate = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    }) : 'No date available';
+                    
+                    newsCard.innerHTML = `
+                        <a href="${article.url}" target="_blank" rel="noopener noreferrer" class="block">
+                            <img src="${imageUrl}" alt="${article.title}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/4a5568?text=Image+Not+Found';">
+                        </a>
+                        <div class="p-6 flex-grow flex flex-col">
+                            <h2 class="text-xl font-bold mb-2 text-gray-900">${article.title}</h2>
+                            <p class="text-gray-700 flex-grow mb-4">${article.description}</p>
+                            <div class="mt-auto pt-4 border-t border-gray-200 flex justify-between items-center text-sm text-gray-500">
+                                <span>${article.source.name || 'Unknown Source'}</span>
+                                <span>${publishedDate}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    newsContainer.appendChild(newsCard);
+                });
+            }
+
+            // --- Initial call to display the mock news data ---
+            loader.style.display = 'none';
+            displayNews(mockNewsData.articles);
+        });
+    </script>
+
+</body>
+</html>

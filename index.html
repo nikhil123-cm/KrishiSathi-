@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krishi Sathi - Welcome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .font-kalam { font-family: 'Kalam', cursive; }
+
+        /* Styles from FarmAI Assistant */
+        :root {
+            --wood-light: #e3c19f;
+            --wood-dark: #c19a6b;
+            --wood-text: #5d4037;
+            --green-light: #e8f5e9;
+            --green-dark: #388e3c;
+            --green-text: #1b5e20;
+            --sky-gradient-start: #dcedc8;
+            --sky-gradient-end: #a5d6a7;
+        }
+        .wood-frame {
+            background-color: var(--wood-light);
+            border: 12px solid #a1887f;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 0 15px rgba(0,0,0,0.3);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            max-height: 800px;
+        }
+        .inner-container {
+            background-color: #f7f3e9;
+            border-radius: 28px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            background-image: linear-gradient(rgba(247, 243, 233, 0.9), rgba(247, 243, 233, 0.9)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--sky-gradient-start), var(--sky-gradient-end));
+            border-bottom: 2px solid rgba(255,255,255,0.5);
+            padding: 1.5rem;
+            border-radius: 28px 28px 0 0;
+        }
+        .wood-btn {
+            background-color: var(--wood-light);
+            border: 2px solid var(--wood-dark);
+            color: var(--wood-text);
+            font-weight: 600;
+            border-radius: 16px;
+            padding: 0.5rem 1.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 -2px 1px rgba(0,0,0,0.1);
+            transition: all 0.2s ease-in-out;
+        }
+        .wood-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 -2px 1px rgba(0,0,0,0.1);
+        }
+        .wood-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 2px 1px rgba(0,0,0,0.1);
+        }
+        .wood-btn-sm { padding: 0.3rem 1rem; border-radius: 12px; }
+        #chat-window { padding: 1.5rem; overflow-y: auto; flex-grow: 1; }
+        #chat-window::-webkit-scrollbar { width: 8px; }
+        #chat-window::-webkit-scrollbar-track { background: transparent; }
+        #chat-window::-webkit-scrollbar-thumb { background-color: var(--wood-dark); border-radius: 10px; }
+        .chat-bubble { animation: slide-in 0.4s ease-out forwards; }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .ai-bubble {
+            background-color: var(--green-light);
+            border: 1px solid #c8e6c9;
+            color: var(--green-text);
+            border-radius: 20px;
+            border-top-left-radius: 4px;
+        }
+        .input-container {
+            background-color: rgba(247, 243, 233, 0.7);
+            padding: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        .input-wrapper {
+            background-color: #fff;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            padding: 0.25rem;
+        }
+        #user-input {
+            border: none; outline: none; background: transparent;
+            flex-grow: 1; padding: 0.75rem 1.25rem; font-size: 1rem;
+        }
+        .mic-btn, #send-btn {
+            border-radius: 50%; width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .mic-btn { background-color: #f0f4c3; color: var(--green-dark); }
+        .mic-btn.recording-pulse { background-color: #ef5350; color: white; animation: pulse 1.5s infinite; }
+        #send-btn { background: linear-gradient(135deg, #81c784, #4caf50); color: white; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 83, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0); }
+        }
+        .dot-flashing {
+            position: relative; width: 8px; height: 8px;
+            border-radius: 5px; background-color: var(--green-dark); color: var(--green-dark);
+            animation: dotFlashing 1s infinite linear alternate; animation-delay: .5s;
+        }
+        .dot-flashing::before, .dot-flashing::after {
+            content: ''; display: inline-block; position: absolute; top: 0;
+        }
+        .dot-flashing::before {
+            left: -12px; width: 8px; height: 8px; border-radius: 5px;
+            background-color: var(--green-dark); color: var(--green-dark);
+            animation: dotFlashing 1s infinite alternate; animation-delay: 0s;
+        }
+        .dot-flashing::after {
+            left: 12px; width: 8px; height: 8px; border-radius: 5px;
+            background-color: var(--green-dark); color: var(--green-dark);
+            animation: dotFlashing 1s infinite alternate; animation-delay: 1s;
+        }
+        @keyframes dotFlashing {
+            0% { background-color: var(--green-dark); opacity: 0.5; }
+            50%, 100% { background-color: var(--green-dark); opacity: 1; }
+        }
+        .speak-btn { cursor: pointer; color: var(--green-dark); transition: transform 0.2s; }
+        .speak-btn:hover { transform: scale(1.2); }
+        .speak-btn.speaking { color: #f59e0b; animation: speaking-pulse 1s infinite; }
+        @keyframes speaking-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Styles for Farm Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .day-cell {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .day-cell.selected {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 2px #22c55e;
+            background-color: #f0fdf4;
+        }
+        .day-cell.today .day-number {
+            background-color: #22c55e;
+            color: white;
+            border-radius: 50%;
+        }
+        .day-number {
+            font-weight: 700;
+            font-size: 0.875rem;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .reminder-dot {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 6px; height: 6px;
+            background-color: #f97316;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: #ffffff;
+            padding: 24px; border-radius: 12px;
+            width: 90%; max-width: 450px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .activity-item-sm {
+            font-size: 0.75rem; padding: 1px 4px;
+            border-radius: 4px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-white">
+
+    <div class="overlay"></div>
+
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div id="dashboard" class="w-full max-w-4xl">
+            <div class="text-center mb-8 fade-in">
+                <div class="inline-block bg-green-500 bg-opacity-20 p-3 rounded-full mb-4">
+                    <svg class="w-10 h-10 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.085a2 2 0 00-1.736.93L5.5 8m7 2H5.5m7 2v.085a2 2 0 01-1.736 1.93l-3.616 1.447A2 2 0 015.5 15.085V12m7 2h-1m-6-8a2 2 0 00-2-2H5.5a2 2 0 00-2 2v6a2 2 0 002 2h2.5"></path></svg>
+                </div>
+                <h1 class="text-4xl font-bold text-white tracking-wider" data-translate-key="dashboard_title">Welcome to Krishi Sathi</h1>
+                 <p class="text-green-200 mt-2">Welcome to Krishi Sathi!</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="openChatbot()">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="chatbot_title">Farm AI Assistant</h3>
+                        <p class="text-gray-300" data-translate-key="chatbot_desc">Get expert advice on crops, livestock, and farming techniques</p>
+                    </div>
+                </div>
+
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="window.location.href='doctor.html'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="doctor_crop_title">Doctor Crop</h3>
+                        <p class="text-gray-300" data-translate-key="doctor_crop_desc">Expert crop health diagnostics and advice</p>
+                    </div>
+                </div>
+                
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="window.location.href='weather.html'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="weather_title">Weather Forecast</h3>
+                        <p class="text-gray-300" data-translate-key="weather_desc">Check local weather conditions for better farming decisions</p>
+                    </div>
+                </div>
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="window.location.href='news.html'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-600 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="agrinews_title">AgriNews</h3>
+                        <p class="text-gray-300" data-translate-key="agrinews_desc">Latest agricultural news, trends, and updates</p>
+                    </div>
+                </div>
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="window.location.href='soil.html'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-amber-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="soil_title">Soil</h3>
+                        <p class="text-gray-300" data-translate-key="soil_card_desc">Soil health analysis and medical recommendations</p>
+                    </div>
+                </div>
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="openCalendar()">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="farm_calendar_title">Farm Calendar</h3>
+                        <p class="text-gray-300" data-translate-key="farm_calendar_desc">Plan your farming activities and schedules</p>
+                    </div>
+                </div>
+
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="window.location.href='technique.html'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="advance_techniques_title">Advance Techniques</h3>
+                        <p class="text-gray-300" data-translate-key="advance_techniques_desc">Learn advanced farming techniques and innovations</p>
+                    </div>
+                </div>
+
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="window.location.href='language.html'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="settings_title">Settings</h3>
+                        <p class="text-gray-300" data-translate-key="settings_desc">Customize your app preferences and account settings</p>
+                    </div>
+                </div>
+
+                <div class="form-container p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform cursor-pointer" onclick="window.location.href='help.html'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" data-translate-key="help_title">Help</h3>
+                        <p class="text-gray-300" data-translate-key="help_desc">Get assistance and support</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FARM CALENDAR VIEW -->
+        <div id="calendar-view" class="hidden fixed inset-0 bg-slate-50 z-[60] overflow-y-auto text-slate-800">
+            <div class="max-w-7xl mx-auto p-4 md:p-8">
+                <div class="mb-4">
+                    <button type="button" id="back-to-dashboard-from-calendar" class="flex items-center gap-2 text-sm font-bold text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>Back to Dashboard</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Calendar View -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <!-- Header -->
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 id="current-month-year" class="text-2xl font-bold text-slate-800"></h2>
+                            <div class="flex items-center gap-2">
+                                <button id="today-btn" class="text-sm font-bold text-green-600 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors">Today</button>
+                                <button id="prev-month" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors" aria-label="Previous month">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                                </button>
+                                <button id="next-month" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors" aria-label="Next month">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-2 text-center text-sm font-bold text-slate-500 mb-2">
+                            <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                        </div>
+                        <div id="calendar-grid" class="calendar-grid">
+                            <!-- Calendar days will be generated by JS -->
+                        </div>
+                    </div>
+    
+                    <!-- Daily Focus Panel -->
+                    <div class="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                        <div id="details-panel" class="sticky top-8">
+                            <h3 id="details-date" class="font-bold text-xl text-slate-800 mb-4 pb-2 border-b border-slate-200"></h3>
+                            <div id="details-content" class="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar">
+                                <!-- Details will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Reminder Modal -->
+            <div id="reminder-modal" class="modal-overlay">
+                <div class="modal-content text-slate-800">
+                    <h2 class="text-xl font-bold mb-4">Add Reminder for <span id="modal-date"></span></h2>
+                    <input type="text" id="reminder-input" class="w-full border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="E.g., Check irrigation...">
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button id="close-modal" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 font-semibold text-gray-700 transition-colors">Cancel</button>
+                        <button id="save-reminder" class="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 font-semibold text-white transition-colors">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chatbot Modal -->
+        <div id="chatbot-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-50 flex items-center justify-center p-4">
+             <div class="w-full max-w-xl wood-frame">
+                <div class="inner-container">
+                    <!-- Header -->
+                    <header class="header">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-800"><path d="M10 17c0-3.31 2.69-6 6-6h2V7c0-2.21-1.79-4-4-4S6 4.79 6 7v1"/></svg>
+                                <div>
+                                    <h1 class="text-3xl font-kalam font-bold text-green-900" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">FarmAI</h1>
+                                    <p class="text-sm text-green-800" data-translate-key="friendly_guide">Your natural farming guide</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                 <label for="language-selector" class="sr-only">Select Language</label>
+                                 <select id="language-selector" class="wood-btn wood-btn-sm flex items-center gap-1.5" aria-label="Select Language">
+                                     <option value="en">English</option>
+                                     <option value="hi">हिन्दी</option>
+                                     <option value="ml">മലയാളം</option>
+                                 </select>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="px-6 pt-4 flex items-center justify-center gap-4">
+                        <button id="clear-chat-btn" class="wood-btn flex-1" data-translate-key="new_chat">New Chat</button>
+                        <button type="button" id="back-to-dashboard-btn" class="wood-btn flex-1" data-translate-key="back_to_dashboard">Back to dashboard</button>
+                    </div>
+
+                    <!-- Chat Window -->
+                    <main id="chat-window" class="flex-1 space-y-6">
+                        <!-- Messages dynamically inserted here -->
+                    </main>
+                    
+                    <!-- Loading Indicator -->
+                    <div id="loading-indicator" class="hidden px-6 pb-2">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-2xl flex-shrink-0 shadow">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M14 16.5V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-3.5a2.5 2.5 0 0 1 5 0V18"/><path d="M20 12V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="m18 8 2 3-2 2"/><path d="m6 12 2-3-2-2"/></svg>
+                            </div>
+                            <div class="ai-bubble p-4">
+                                <div class="dot-flashing"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <footer class="input-container">
+                        <div class="input-wrapper">
+                            <input type="text" id="user-input" placeholder="Ask about farming..." data-translate-key="ask_about_farming">
+                            <button type="button" id="mic-btn" aria-label="Voice input" class="mic-btn mr-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
+                            </button>
+                            <button type="button" id="send-btn" aria-label="Send message" class="send-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            </button>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="logic.js"></script>
+<script type="module">
+    // --- Firebase SDK Imports ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- CONFIGURATION ---
+    const API_URL = `/api/gemini`; // Use proxy endpoint
+    
+    // --- Firebase Constants ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+    // --- DOM Elements ---
+    const dashboard = document.getElementById('dashboard');
+    const chatbotModal = document.getElementById('chatbot-modal');
+    const calendarView = document.getElementById('calendar-view');
+    const chatWindow = document.getElementById('chat-window');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const micBtn = document.getElementById('mic-btn');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const clearChatBtn = document.getElementById('clear-chat-btn');
+    const languageSelector = document.getElementById('language-selector');
+    const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+    const backToDashboardFromCalendarBtn = document.getElementById('back-to-dashboard-from-calendar');
+
+    // --- TRANSLATIONS ---
+    const translations = {
+        "en": { "friendly_guide": "Your natural farming guide", "new_chat": "New Chat", "back_to_dashboard": "Back to dashboard", "ask_about_farming": "Ask about farming...", "welcome_message": "Hello there! I'm FarmAI, your friendly guide. Ask me about organic farming, plant care, soil health, or sustainable practices.", "listening": "Listening...", "speech_not_supported": "Your browser doesn't support voice input. You can type your questions instead!", "connection_error": "Sorry, I'm having trouble connecting to my AI brain.", "api_key_missing": "API Key is missing. Please get a key from Google AI Studio and add it to the 'API_KEY' variable in the code to enable the chat.", "general_advice_instead": "Here's some general advice instead:", "fallback_responses": { "corn": "For growing corn, you'll want well-drained soil with plenty of organic matter. Plant when soil temperatures reach 60°F (15°C). Corn needs about 1-2 inches of water per week and full sun. 🌽", "tomato": "Tomatoes love full sun and warm temperatures above 60°F. Plant after the last frost, about 2-3 feet apart. They need consistent watering but don't let the leaves get wet. Stake them for support! 🍅", "pest": "For pest control, try companion planting first - things like marigolds repel many pests. If needed, use organic pesticides like neem oil. Always identify the pest before treating! 🐛", "soil": "Soil is everything! Test your soil pH - most crops prefer 6.0-7.0. Add organic matter like compost to improve fertility and structure. Rotate crops to keep soil healthy! 🌱", "default": "I can help with questions about crops, livestock, farming techniques, pest control, irrigation, soil management, and more. What would you like to know about farming today? 🌾🚜" } },
+        "hi": { "friendly_guide": "आपकी प्राकृतिक खेती गाइड", "new_chat": "नई चैट", "back_to_dashboard": "डैशबोर्ड पर वापस", "ask_about_farming": "खेती के बारे में पूछें...", "welcome_message": "नमस्ते! मैं फार्मएआई हूं, आपका मित्रवत गाइड। मुझसे जैविक खेती, पौधों की देखभाल, मिट्टी के स्वास्थ्य, या स्थायी प्रथाओं के बारे में पूछें।", "listening": "सुन रहा हूँ...", "speech_not_supported": "आपका ब्राउज़र वॉयस इनपुट का समर्थन नहीं करता है। आप इसके बजाय अपने प्रश्न टाइप कर सकते हैं!", "connection_error": "क्षमा करें, मुझे अपने AI मस्तिष्क से जुड़ने में समस्या आ रही है।", "api_key_missing": "API कुंजी गुम है। कृपया Google AI Studio से एक कुंजी प्राप्त करें और चैट को सक्षम करने के लिए इसे कोड में 'API_KEY' वैरिएबल में जोड़ें।", "general_advice_instead": "इसके बजाय यहाँ कुछ सामान्य सलाह दी गई है:", "fallback_responses": { "corn": "मक्का उगाने के लिए, आपको अच्छी जल निकासी वाली मिट्टी चाहिए जिसमें भरपूर मात्रा में कार्बनिक पदार्थ हों। जब मिट्टी का तापमान 60°F (15°C) तक पहुँच जाए तब पौधे लगाएँ। मक्के को प्रति सप्ताह लगभग 1-2 इंच पानी और पूरी धूप की आवश्यकता होती है। 🌽", "tomato": "टमाटर को पूरी धूप और 60°F से ऊपर गर्म तापमान पसंद है। आखिरी पाले के बाद लगभग 2-3 फीट की दूरी पर पौधे लगाएँ। उन्हें लगातार पानी देने की आवश्यकता होती है, लेकिन पत्तियों को गीला न होने दें। सहारे के लिए उन्हें डंडे से बांधें! 🍅", "pest": "कीट नियंत्रण के लिए, पहले साथी रोपण का प्रयास करें - गेंदे जैसी चीजें कई कीटों को दूर भगाती हैं। यदि आवश्यक हो, तो नीम के तेल जैसे जैविक कीटनाशकों का उपयोग करें। उपचार करने से पहले हमेशा कीट की पहचान करें! 🐛", "soil": "मिट्टी ही सब कुछ है! अपनी मिट्टी का पीएच परीक्षण करें - अधिकांश फसलें 6.0-7.0 पसंद करती हैं। उर्वरता और संरचना में सुधार के लिए खाद जैसे कार्बनिक पदार्थ डालें। मिट्टी को स्वस्थ रखने के लिए फसलें घुमाएँ! 🌱", "default": "मैं फसलों, पशुधन, कृषि तकनीकों, कीट नियंत्रण, सिंचाई, मिट्टी प्रबंधन, और बहुत कुछ के बारे में सवालों में मदद कर सकता हूँ। आज आप खेती के बारे में क्या जानना चाहेंगे? 🌾🚜" } },
+        "ml": { "friendly_guide": "നിങ്ങളുടെ പ്രകൃതിദത്ത കൃഷി സഹായി", "new_chat": "പുതിയ ചാറ്റ്", "back_to_dashboard": "ഡാഷ്‌ബോർഡിലേക്ക് മടങ്ങുക", "ask_about_farming": "കൃഷിയെക്കുറിച്ച് ചോദിക്കുക...", "welcome_message": "നമസ്കാരം! ഞാൻ ഫാംഎഐ, നിങ്ങളുടെ സൗഹൃദപരമായ വഴികാട്ടി. ജൈവകൃഷി, സസ്യ സംരക്ഷണം, മണ്ണിന്റെ ആരോഗ്യം, അല്ലെങ്കിൽ സുസ്ഥിരമായ രീതികളെക്കുറിച്ച് എന്നോട് ചോദിക്കൂ.", "listening": "കേൾക്കുന്നു...", "speech_not_supported": "നിങ്ങളുടെ ബ്രൗസർ വോയ്‌സ് ഇൻപുട്ടിനെ പിന്തുണയ്ക്കുന്നില്ല. പകരം നിങ്ങളുടെ ചോദ്യങ്ങൾ ടൈപ്പ് ചെയ്യാം!", "connection_error": "ക്ഷമിക്കണം, എനിക്ക് എന്റെ AI തലച്ചോറുമായി ബന്ധപ്പെടാൻ കഴിയുന്നില്ല.", "api_key_missing": "API കീ ലഭ്യമല്ല. ചാറ്റ് പ്രവർത്തനക്ഷമമാക്കാൻ ദയവായി Google AI Studio-യിൽ നിന്ന് ഒരു കീ നേടുകയും അത് കോഡിലെ 'API_KEY' വേരിയബിളിലേക്ക് ചേർക്കുകയും ചെയ്യുക.", "general_advice_instead": "പകരമായി ഇതാ ചില പൊതുവായ ഉപദേശങ്ങൾ:", "fallback_responses": { "corn": "ചോളം വളർത്തുന്നതിന്, ധാരാളം ജൈവാംശമുള്ള, നല്ല നീർവാർച്ചയുള്ള മണ്ണ് ആവശ്യമാണ്. മണ്ണിന്റെ താപനില 60°F (15°C) എത്തുമ്പോൾ നടുക. ചോളത്തിന് ആഴ്ചയിൽ ഏകദേശം 1-2 ഇഞ്ച് വെള്ളവും പൂർണ്ണ സൂര്യപ്രകാശവും ആവശ്യമാണ്. 🌽", "tomato": "തക്കാളിക്ക് പൂർണ്ണ സൂര്യപ്രകാശവും 60°F-ന് മുകളിലുള്ള ഊഷ്മളമായ താപനിലയും ഇഷ്ടമാണ്. അവസാനത്തെ മഞ്ഞിന് ശേഷം ഏകദേശം 2-3 അടി അകലത്തിൽ നടുക. അവയ്ക്ക് സ്ഥിരമായി നനയ്ക്കേണ്ടതുണ്ട്, പക്ഷേ ഇലകൾ നനയാൻ അനുവദിക്കരുത്. താങ്ങിനായി കമ്പുകൾ സ്ഥാപിക്കുക! 🍅", "pest": "കീടനിയന്ത്രണത്തിനായി, ആദ്യം സഹചാരി നടീൽ പരീക്ഷിക്കുക - ചെണ്ടുമല്ലി പോലുള്ളവ പല കീടങ്ങളെയും അകറ്റുന്നു. ആവശ്യമെങ്കിൽ, വേപ്പെണ്ണ പോലുള്ള ജൈവ കീടനാശിനികൾ ഉപയോഗിക്കുക. ചികിത്സിക്കുന്നതിന് മുമ്പ് എപ്പോഴും കീടത്തെ തിരിച്ചറിയുക! 🐛", "soil": "മണ്ണാണ് എല്ലാം! നിങ്ങളുടെ മണ്ണിന്റെ പിഎച്ച് പരിശോധിക്കുക - മിക്ക വിളകളും 6.0-7.0 ഇഷ്ടപ്പെടുന്നു. ഫലഭൂയിഷ്ഠതയും ഘടനയും മെച്ചപ്പെടുത്തുന്നതിന് കമ്പോസ്റ്റ് പോലുള്ള ജൈവവസ്തുക്കൾ ചേർക്കുക. മണ്ണിന്റെ ആരോഗ്യം നിലനിർത്താൻ വിളകൾ മാറ്റി നടുക! 🌱", "default": "വിളകൾ, കന്നുകാലികൾ, കൃഷിരീതികൾ, കീടനിയന്ത്രണം, ജലസേചനം, മണ്ണ് പരിപാലനം എന്നിവയെക്കുറിച്ചുള്ള ചോദ്യങ്ങൾക്ക് എനിക്ക് സഹായിക്കാനാകും. ഇന്ന് കൃഷിയെക്കുറിച്ച് നിങ്ങൾക്കെന്താണ് അറിയേണ്ടത്? 🌾🚜" } }
+    };
+    
+    // --- STATE MANAGEMENT ---
+    let chatHistory = [];
+    let currentLanguage = 'en';
+    let db, auth, userId, unsubscribeChat;
+
+    // --- SPEECH & SYNTHESIS SETUP ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const speechSynthesis = window.speechSynthesis;
+    let recognition;
+    let isRecording = false;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+    } 
+
+    // --- VIEW & MODAL CONTROL ---
+    window.openChatbot = () => {
+        chatbotModal.classList.remove('hidden');
+        chatbotModal.classList.add('flex');
+        userInput.focus();
+    };
+
+    const closeChatbot = () => {
+        chatbotModal.classList.add('hidden');
+        chatbotModal.classList.remove('flex');
+        speechSynthesis.cancel(); // Stop any speech when closing
+    };
+
+    window.openCalendar = () => {
+        dashboard.classList.add('hidden');
+        calendarView.classList.remove('hidden');
+    };
+
+    const closeCalendar = () => {
+        calendarView.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+    };
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', initialize);
+
+    function initialize() {
+        setupStaticEventListeners();
+        initializeCalendar();
+        
+        if (firebaseConfig) {
+            initializeFirebase();
+        } else {
+            console.error("Firebase config is missing! Running in offline mode.");
+            updateChatHistory(translations[currentLanguage].welcome_message, 'model');
+        }
+
+        if (recognition) {
+            setupRecognition();
+        } else {
+            handleSpeechRecognitionNotSupported();
+        }
+    }
+
+    async function initializeFirebase() {
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    await loadUserSettings();
+                    setupChatListener();
+                } else {
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) {
+                        await signInWithCustomToken(auth, token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+            updateChatHistory("Failed to connect to backend services. Running in offline mode.", 'model');
+        }
+    }
+
+    // --- EVENT LISTENERS ---
+    function setupStaticEventListeners() {
+        chatWindow.addEventListener('click', (e) => {
+            if (e.target.closest('.speak-btn')) {
+                const textToSpeak = e.target.closest('.speak-btn').dataset.text;
+                speakMessage(textToSpeak, currentLanguage, e.target.closest('.speak-btn'));
+            }
+        });
+
+        languageSelector.addEventListener('change', (e) => changeLanguage(e.target.value));
+
+        micBtn.addEventListener('click', () => {
+            if (!recognition) return;
+            if (!isRecording) recognition.start();
+            else recognition.stop();
+        });
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const message = userInput.value.trim();
+                if (message) sendMessage(message);
+            }
+        });
+
+        sendBtn.addEventListener('click', () => {
+            const message = userInput.value.trim();
+            if (message) sendMessage(message);
+        });
+
+        clearChatBtn.addEventListener('click', () => {
+            speechSynthesis.cancel();
+            chatHistory = []; // Clear local history
+            const welcomeMsg = translations[currentLanguage].welcome_message;
+            updateChatHistory(welcomeMsg, 'model');
+        });
+        
+        backToDashboardBtn.addEventListener('click', closeChatbot);
+        chatbotModal.addEventListener('click', (e) => {
+             if (e.target.id === 'chatbot-modal') closeChatbot();
+        });
+
+        backToDashboardFromCalendarBtn.addEventListener('click', closeCalendar);
+    }
+
+    // --- CHATBOT CORE FUNCTIONS ---
+    function sendMessage(message) {
+        updateChatHistory(message, 'user');
+        userInput.value = '';
+        showLoadingIndicator();
+        callGeminiAPI();
+    }
+    
+    async function callGeminiAPI() {
+        const selectedLanguageName = languageSelector.options[languageSelector.selectedIndex].text;
+        const systemPrompt = `You are FarmAI, a friendly and knowledgeable guide specializing in natural and organic farming. Your persona is encouraging, patient, and passionate about sustainable agriculture. Provide practical, easy-to-understand advice on topics like organic pest control, soil health, companion planting, and permaculture. Use nature-related emojis 🌿, 🌱, 🥕, 🐞. You MUST respond in ${selectedLanguageName}.`;
+
+        const payload = {
+            contents: chatHistory,
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (text) {
+                updateChatHistory(text, 'model');
+            } else {
+                throw new Error("Empty response from API.");
+            }
+
+        } catch (error) {
+            console.error('Error calling Gemini API:', error);
+            const connectionErrorMsg = translations[currentLanguage].connection_error;
+            const lastUserQuery = chatHistory.filter(m => m.role === 'user').pop()?.parts?.[0]?.text || "farming";
+            const fallbackResponse = getFallbackResponse(lastUserQuery);
+            const generalAdviceHeader = translations[currentLanguage].general_advice_instead;
+            const combinedMessage = `${connectionErrorMsg} 🤖\n\n${generalAdviceHeader}\n\n${fallbackResponse}`;
+            updateChatHistory(combinedMessage, 'model');
+        } finally {
+            hideLoadingIndicator();
+        }
+    }
+    
+    function speakMessage(text, langCode, btnElement) {
+        if (speechSynthesis.speaking) speechSynthesis.cancel();
+        document.querySelectorAll('.speak-btn.speaking').forEach(el => el.classList.remove('speaking'));
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = langCode;
+        utterance.onstart = () => btnElement.classList.add('speaking');
+        utterance.onend = () => btnElement.classList.remove('speaking');
+        utterance.onerror = () => {
+             btnElement.classList.remove('speaking');
+             console.error("Speech synthesis error.");
+        };
+        speechSynthesis.speak(utterance);
+    }
+
+    // --- CHAT UI & HISTORY ---
+    function displayMessage(message, role) {
+        const messageText = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        const messageElement = document.createElement('div');
+        messageElement.className = "flex items-start gap-3 chat-bubble";
+        
+        if (role === 'user') {
+            messageElement.classList.add("justify-end");
+            messageElement.innerHTML = `
+                <div class="bg-white p-4 rounded-2xl rounded-tr-none max-w-md shadow-sm border">
+                    <p class="text-gray-800">${messageText}</p>
+                </div>
+                <div class="w-10 h-10 bg-sky-100 text-sky-700 rounded-full flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">🧑‍🌾</div>`;
+        } else {
+            messageElement.innerHTML = `
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-2xl flex-shrink-0 shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M14 16.5V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-3.5a2.5 2.5 0 0 1 5 0V18"/><path d="M20 12V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="m18 8 2 3-2 2"/><path d="m6 12 2-3-2-2"/></svg>
+                </div>
+                <div class="ai-bubble p-4 max-w-md">
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="font-bold">FarmAI</p>
+                        <button class="speak-btn" data-text="${message.replace(/"/g, '&quot;')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M11.536 14.01A8.47 8.47 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-1.414 1.414A6.47 6.47 0 0 1 12.026 8c0 1.767-.683 3.392-1.904 4.604l1.414 1.406z"/><path d="M10.121 12.596A6.48 6.48 0 0 0 12.026 8a6.48 6.48 0 0 0-1.905-4.596l-1.414 1.414A4.49 4.49 0 0 1 10.026 8a4.49 4.49 0 0 1-1.318 3.182l1.414 1.414z"/><path d="M8.707 11.182A4.49 4.49 0 0 0 10.026 8a4.49 4.49 0 0 0-1.319-3.182L7.293 6.232A2.49 2.49 0 0 1 8.026 8a2.49 2.49 0 0 1-.732 1.768l1.414 1.414z"/><path d="M6 7.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5z"/></svg>
+                        </button>
+                    </div>
+                    <p>${messageText}</p>
+                </div>`;
+        }
+        chatWindow.appendChild(messageElement);
+        scrollToBottom();
+    }
+    
+    function updateChatHistory(message, role) {
+        if (role === 'model' && message === translations[currentLanguage].welcome_message && chatHistory.some(m => m.parts[0].text === message)) {
+            return;
+        }
+        chatHistory.push({ role: role, parts: [{ text: message }] });
+        saveChatHistory();
+        if (!firebaseConfig) {
+            renderChatHistory();
+        }
+    }
+    
+    async function saveChatHistory() { 
+        if (!userId || !db) return;
+        const chatRef = doc(db, 'artifacts', appId, 'users', userId, 'chat', 'history');
+        try {
+            await setDoc(chatRef, { messages: chatHistory });
+        } catch (error) {
+            console.error("Error saving chat history:", error);
+        }
+    }
+
+    function setupChatListener() {
+        if (unsubscribeChat) unsubscribeChat();
+        if (!userId || !db) return;
+
+        const chatRef = doc(db, 'artifacts', appId, 'users', userId, 'chat', 'history');
+        unsubscribeChat = onSnapshot(chatRef, (docSnap) => {
+            const messages = docSnap.exists() && docSnap.data().messages ? docSnap.data().messages : [];
+            chatHistory = messages;
+            
+            if (chatHistory.length === 0) {
+                updateChatHistory(translations[currentLanguage].welcome_message, 'model');
+            } else {
+                renderChatHistory();
+            }
+        }, (error) => {
+            console.error("Firestore snapshot error:", error);
+            updateChatHistory("Error loading chat history.", 'model');
+        });
+    }
+    
+    function renderChatHistory() {
+        chatWindow.innerHTML = '';
+        chatHistory.forEach(item => displayMessage(item.parts[0].text, item.role));
+        scrollToBottom();
+    }
+
+    // --- LANGUAGE & TRANSLATION ---
+    async function changeLanguage(langCode) {
+        currentLanguage = langCode;
+        if (recognition) recognition.lang = langCode === 'en' ? 'en-US' : langCode === 'hi' ? 'hi-IN' : 'ml-IN';
+        translateUI();
+        await saveUserSettings();
+        chatHistory = [];
+        updateChatHistory(translations[currentLanguage].welcome_message, 'model');
+    }
+
+    async function saveUserSettings() {
+        if (!userId || !db) return;
+        const settingsRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'userSettings');
+        await setDoc(settingsRef, { language: currentLanguage }, { merge: true });
+    }
+
+    async function loadUserSettings() {
+        if (!userId || !db) return;
+        const settingsRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'userSettings');
+        try {
+            const docSnap = await getDoc(settingsRef);
+            currentLanguage = (docSnap.exists() && docSnap.data().language) ? docSnap.data().language : 'en';
+        } catch(e) {
+            console.error("Could not load user settings", e);
+            currentLanguage = 'en';
+        } finally {
+            languageSelector.value = currentLanguage;
+            translateUI();
+        }
+    }
+    
+    function translateUI() {
+        document.querySelectorAll('[data-translate-key]').forEach(el => {
+            const key = el.dataset.translateKey;
+            const translation = translations[currentLanguage]?.[key] || el.textContent;
+            if (el.tagName === 'INPUT') el.placeholder = translation;
+            else el.textContent = translation;
+        });
+    }
+    
+    // --- SPEECH RECOGNITION ---
+    function setupRecognition() {
+        recognition.lang = currentLanguage === 'en' ? 'en-US' : currentLanguage === 'hi' ? 'hi-IN' : 'ml-IN';
+        recognition.onstart = () => { isRecording = true; micBtn.classList.add('recording-pulse'); userInput.placeholder = translations[currentLanguage].listening; };
+        recognition.onend = () => { isRecording = false; micBtn.classList.remove('recording-pulse'); userInput.placeholder = translations[currentLanguage].ask_about_farming; };
+        recognition.onresult = (event) => { const transcript = event.results[0][0].transcript; userInput.value = transcript; if (transcript) sendMessage(transcript); };
+        recognition.onerror = (event) => console.error("Speech recognition error:", event.error);
+    }
+    
+    function handleSpeechRecognitionNotSupported() {
+        micBtn.disabled = true;
+        micBtn.style.cssText = 'background-color: #e0e0e0; cursor: not-allowed;';
+        updateChatHistory(translations[currentLanguage].speech_not_supported, 'model');
+    }
+
+    // --- UTILITIES ---
+    function showLoadingIndicator() { loadingIndicator.classList.remove('hidden'); scrollToBottom(); }
+    function hideLoadingIndicator() { loadingIndicator.classList.add('hidden'); }
+    function scrollToBottom() { chatWindow.scrollTop = chatWindow.scrollHeight; }
+
+    function getFallbackResponse(userQuery) {
+        const query = userQuery.toLowerCase();
+        const fallbacks = translations[currentLanguage].fallback_responses;
+        if (query.includes('corn') || query.includes('maize')) return fallbacks.corn;
+        if (query.includes('tomato') || query.includes('tomatoes')) return fallbacks.tomato;
+        if (query.includes('pest') || query.includes('insect')) return fallbacks.pest;
+        if (query.includes('soil')) return fallbacks.soil;
+        return fallbacks.default;
+    }
+
+    // --- CALENDAR LOGIC ---
+    function initializeCalendar() {
+        const cropSchedule = [ { crop: "Jowar (Kharif)", schedule: { "June": 1, "July": 1, "August": 2, "September": 3, "October": 4 } }, { crop: "Bajra (Kharif)", schedule: { "June": 1, "July": 1, "August": 2, "September": 3, "October": 4 } }, { crop: "Paddy/Rice (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 4, "October": 4 } }, { crop: "Tur/Arhar (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 3, "October": 3, "November": 4, "December": 4 } }, { crop: "Cotton (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 3, "October": 4, "November": 4 } }, { crop: "Groundnut (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 4, "October": 4 } }, { crop: "Soybean (Kharif)", schedule: { "June": 1, "July": 2, "August": 3, "September": 3, "October": 4 } }, { crop: "Wheat (Rabi)", schedule: { "October": 1, "November": 1, "December": 2, "January": 3, "February": 4, "March": 4 } }, { crop: "Gram/Chickpea (Rabi)", schedule: { "October": 1, "November": 2, "December": 3, "January": 4, "February": 4 } }, { crop: "Jowar (Rabi)", schedule: { "September": 1, "October": 1, "November": 2, "December": 3, "January": 4, "February": 4 } }, { crop: "Sugarcane", schedule: { "January": 1, "February": 2, "March": 2, "April": 3, "May": 3, "June": 3, "July": 3, "August": 3, "September": 3, "October": 3, "November": 4, "December": 4 } }, { crop: "Onion (Rabi)", schedule: { "October": 1, "November": 1, "December": 2, "January": 3, "February": 4, "March": 4 } }, { crop: "Tomato", schedule: { "June": 1, "July": 2, "August": 3, "September": 4, "October": 4, "November": 1, "December": 2, "January": 3, "February": 4 } }, { crop: "Grapes", schedule: { "April": 3, "May": 3, "September": 3, "October": 3, "January": 4, "February": 4, "March": 4 } }, { crop: "Mango", schedule: { "June": 3, "July": 3, "August": 3, "April": 4, "May": 4, "June": 4 } }, { crop: "Watermelon (Summer)", schedule: { "January": 1, "February": 2, "March": 3, "April": 4, "May": 4 } }, ];
+        const STAGE_DETAILS = { 1: { name: 'Sowing', emoji: '🌱', color: 'bg-green-100 text-green-800' }, 2: { name: 'Growing', emoji: '🌿', color: 'bg-yellow-100 text-yellow-800' }, 3: { name: 'Maintenance', emoji: '💧', color: 'bg-blue-100 text-blue-800' }, 4: { name: 'Harvesting', emoji: '🌾', color: 'bg-orange-100 text-orange-800' } };
+        const calendarGrid = document.getElementById('calendar-grid');
+        const currentMonthYearEl = document.getElementById('current-month-year');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const todayBtn = document.getElementById('today-btn');
+        const modal = document.getElementById('reminder-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const modalDateEl = document.getElementById('modal-date');
+        const saveReminderBtn = document.getElementById('save-reminder');
+        const reminderInput = document.getElementById('reminder-input');
+        const detailsDateEl = document.getElementById('details-date');
+        const detailsContentEl = document.getElementById('details-content');
+
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let reminders = JSON.parse(localStorage.getItem('farmerReminders')) || {};
+        let currentModalDateKey = null;
+
+        function saveReminders() { localStorage.setItem('farmerReminders', JSON.stringify(reminders)); }
+        
+        function openModal() {
+            const dateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+            currentModalDateKey = dateKey;
+            modalDateEl.textContent = `${months[selectedDate.getMonth()]} ${selectedDate.getDate()}`;
+            reminderInput.value = '';
+            modal.classList.add('visible');
+            reminderInput.focus();
+        }
+
+        function closeModal() { modal.classList.remove('visible'); }
+
+        function addReminder() {
+            const text = reminderInput.value.trim();
+            if (text && currentModalDateKey) {
+                if (!reminders[currentModalDateKey]) reminders[currentModalDateKey] = [];
+                reminders[currentModalDateKey].push(text);
+                saveReminders();
+                renderCalendar();
+                updateDetailsPanel();
+                closeModal();
+            }
+        }
+
+        function deleteReminder(index) {
+            const dateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth()).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+            if (dateKey && reminders[dateKey]) {
+                reminders[dateKey].splice(index, 1);
+                if (reminders[dateKey].length === 0) delete reminders[dateKey];
+                saveReminders();
+                renderCalendar();
+                updateDetailsPanel();
+            }
+        }
+        
+        function getActivitiesForDate(date) {
+            const monthName = months[date.getMonth()];
+            return cropSchedule
+                .filter(crop => crop.schedule[monthName])
+                .map(crop => ({ crop: crop.crop, stage: crop.schedule[monthName] }));
+        }
+        
+        function updateDetailsPanel() {
+            const month = selectedDate.getMonth();
+            const day = selectedDate.getDate();
+            const year = selectedDate.getFullYear();
+            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            detailsDateEl.textContent = `${months[month]} ${day}, ${year}`;
+            detailsContentEl.innerHTML = ''; 
+
+            const activities = getActivitiesForDate(selectedDate);
+            let activitiesHTML = `<div><h4 class="font-bold mb-2">Crop Schedule</h4><div class="space-y-2">`;
+            if (activities.length > 0) {
+                activities.forEach(activity => {
+                    const details = STAGE_DETAILS[activity.stage];
+                    activitiesHTML += `<div class="flex items-center p-2 rounded-lg ${details.color}"><span class="text-lg mr-3">${details.emoji}</span><div><p class="font-bold text-sm">${activity.crop}</p><p class="text-xs">${details.name}</p></div></div>`;
+                });
+            } else {
+                activitiesHTML += `<p class="text-sm text-slate-500">No scheduled crop activities.</p>`;
+            }
+            activitiesHTML += `</div></div>`;
+            detailsContentEl.innerHTML += activitiesHTML;
+
+            const dayReminders = reminders[dateKey] || [];
+            let remindersHTML = `<div><div class="flex justify-between items-center mb-2"><h4 class="font-bold">My Reminders</h4><button id="add-reminder-btn" class="text-sm font-bold text-green-600 hover:text-green-500">+ Add</button></div><div id="reminders-list" class="space-y-2">`;
+            if (dayReminders.length > 0) {
+                dayReminders.forEach((text, index) => {
+                    remindersHTML += `<div class="flex justify-between items-center bg-gray-100 p-2 rounded-lg text-sm"><span>${text}</span><button data-index="${index}" class="delete-reminder text-red-400 hover:text-red-600 font-bold">&times;</button></div>`;
+                });
+            } else {
+                remindersHTML += `<p class="text-sm text-slate-500">No personal reminders set.</p>`;
+            }
+            remindersHTML += `</div></div>`;
+            detailsContentEl.innerHTML += remindersHTML;
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const today = new Date();
+
+            currentMonthYearEl.textContent = `${months[month]} ${year}`;
+            calendarGrid.innerHTML = '';
+            
+            const firstDayOfWeek = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayOfWeek; i++) calendarGrid.innerHTML += `<div class="bg-gray-50 rounded-lg"></div>`;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                const cellDate = new Date(year, month, day);
+                const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                dayCell.className = 'day-cell cursor-pointer p-2 min-h-[80px] flex flex-col';
+                
+                if(year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) dayCell.classList.add('today');
+                
+                if (year === selectedDate.getFullYear() && month === selectedDate.getMonth() && day === selectedDate.getDate()) {
+                    dayCell.classList.add('selected');
+                }
+
+                let dayContent = `<div class="flex justify-between items-start"><div class="day-number">${day}</div></div><div class="mt-1 space-y-1 text-xs overflow-hidden" style="max-height: 60px;">`;
+
+                const activities = getActivitiesForDate(cellDate);
+                activities.slice(0, 2).forEach(activity => {
+                    const details = STAGE_DETAILS[activity.stage];
+                    dayContent += `<div class="activity-item-sm ${details.color} truncate">${details.emoji} ${activity.crop}</div>`;
+                });
+                if(activities.length > 2) {
+                    dayContent += `<div class="text-xs text-slate-500 font-semibold truncate">+ ${activities.length - 2} more</div>`;
+                }
+                dayContent += '</div>';
+                if (reminders[dateKey] && reminders[dateKey].length > 0) {
+                    dayContent += `<div class="reminder-dot"></div>`;
+                }
+                dayCell.innerHTML = dayContent;
+                
+                dayCell.addEventListener('click', () => {
+                    selectedDate = cellDate;
+                    renderCalendar();
+                    updateDetailsPanel();
+                });
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
+        nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
+        todayBtn.addEventListener('click', () => { currentDate = new Date(); selectedDate = new Date(); renderCalendar(); updateDetailsPanel(); });
+        closeModalBtn.addEventListener('click', closeModal);
+        saveReminderBtn.addEventListener('click', addReminder);
+        reminderInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') addReminder(); });
+        detailsContentEl.addEventListener('click', (e) => {
+            if (e.target.id === 'add-reminder-btn') openModal();
+            if (e.target.classList.contains('delete-reminder')) {
+                const index = parseInt(e.target.dataset.index, 10);
+                deleteReminder(index);
+            }
+        });
+
+        renderCalendar();
+        updateDetailsPanel();
+    }
+</script>
+
+</body>
+</html>
